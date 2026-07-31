@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+companies*.csv
+sponsors.csv
+jobs_*.csv
+seen_jobs.json
+ng_cache.json
+unresolved.txt
+*.xlsx
+feed.log
