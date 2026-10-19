@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-discover_slugs.py —— 从公司官网发现真实 ATS slug, 而不是靠猜名字变体
+discover_slugs.py - discover the real ATS slug from a company's website instead of guessing name variants
 
-背景: resolve_slugs.py 靠猜公司名拼写变体去试 ATS API, 命中率只有 ~20%——瓶颈是
-猜不中公司名对应的 slug 拼法, 不是平台没覆盖到（Greenhouse 市占 49%、Workday
-22%, 这两个 resolve_slugs.py/job_feed.py 都已经支持)。这个脚本换个路子:
+Background: resolve_slugs.py probes ATS APIs with guessed spellings of the company name and only
+hits ~20%. The bottleneck is guessing the slug spelling, not platform coverage (Greenhouse has
+49% market share and Workday 22%; resolve_slugs.py/job_feed.py support both). This script instead does:
 
-    公司名 -> Clearbit autocomplete 查官网域名
-           -> 抓官网 /careers、/jobs 等页面（都没有就退到首页, 再退到首页里找的
-              career/jobs 链接）
-           -> 直接从页面源码里正则抠出 ATS 域名和 slug
-              (boards.greenhouse.io/xxx、jobs.lever.co/xxx、
-               xxx.wd5.myworkdayjobs.com/yyy 等, 含 script 标签里的 embed 链接)
-           -> 用 resolve_slugs.py / resolve_workday.py 里现成的探测函数验证一遍
+    company name -> Clearbit autocomplete to find the website domain
+           -> fetch /careers, /jobs and similar pages (falling back to the homepage, then to
+              career/jobs links found on the homepage)
+           -> regex the ATS domain and slug straight out of the page source
+              (boards.greenhouse.io/xxx, jobs.lever.co/xxx,
+               xxx.wd5.myworkdayjobs.com/yyy etc., including embed links inside script tags)
+           -> verify with the existing probe functions in resolve_slugs.py / resolve_workday.py
 
-先用 --test（默认 30 家, 按 sponsor_count 从高到低取 sponsors.csv 里还没进
-companies.csv/companies_workday.csv 的公司）看命中率, 过得去再决定要不要跑全量、
-要不要接进 resolve_slugs.py 主流程替换掉猜名字那一套。
+Start with --test (default 30 companies: the highest sponsor_count rows in sponsors.csv that are
+not yet in companies.csv/companies_workday.csv) to check the hit rate, then decide whether to run
+everything and whether to replace the name-guessing step in resolve_slugs.py.
 
-用法:
-    python3 discover_slugs.py            # 默认测前 30 家
-    python3 discover_slugs.py --test 50  # 测前 50 家
+Usage:
+    python3 discover_slugs.py            # test the first 30 by default
+    python3 discover_slugs.py --test 50  # test the first 50
 """
 
 import argparse
@@ -47,7 +47,7 @@ WORKERS = 10
 LEGAL = (r"\b(INC|LLC|LTD|CORP|CORPORATION|COMPANY|CO|LP|LLP|PLC|PBC|HOLDINGS|"
          r"GROUP|USA|US|AMERICA|AMERICAS|NA)\b")
 
-# 常见 careers 页面路径, 按出现频率排序; 每个都试 裸域名 + www 两种host
+# Common careers-page paths, ordered by frequency; each is tried on the bare domain and on www
 CAREERS_PATHS = ["careers", "jobs", "join-us", "about/careers",
                   "company/careers", "careers/open-positions"]
 
@@ -75,11 +75,11 @@ def clean_query(name):
 
 
 def find_domain(name):
-    """Clearbit 对 3 个词以上的查询经常直接返回 []（"Meta Platforms"、"Two Sigma
-    Investments" 都是空), 所以从完整清洗名开始, 依次退到前两个词、第一个词。
-    命中了空结果就退一级再试; 拿到结果后优先选 name 跟查询词精确匹配（大小写不敏感）
-    的候选, 而不是无脑取第一条——Clearbit 排序有时把无关公司排在前面（比如查
-    "Meta" 第一条是 Metacritic）。"""
+    """Clearbit often returns [] for queries of 3+ words ("Meta Platforms", "Two Sigma
+    Investments" are both empty), so start from the full cleaned name and fall back to the first
+    two words, then the first word. On an empty result, step down one level and retry. From the
+    results, prefer a candidate whose name matches the query exactly (case-insensitive) over the
+    first row: Clearbit sometimes ranks unrelated companies first ("Meta" returns Metacritic)."""
     full = clean_query(name)
     words = full.split()
     queries = [full]
@@ -129,7 +129,7 @@ def extract_ats(html):
 
 
 def find_ats(domain):
-    """返回 (页面url, ats, slug)。找不到时 ats/slug 是 None。"""
+    """Return (page url, ats, slug). ats/slug are None when nothing is found."""
     hosts = [f"https://{domain}", f"https://www.{domain}"]
     last_url = None
     for path in CAREERS_PATHS:
@@ -161,7 +161,7 @@ def find_ats(domain):
                 ats, slug = extract_ats(html)
                 if ats:
                     return link_url, ats, slug
-        break  # 首页都试过一次就够了, 不用裸域名/www各来一遍
+        break  # trying the homepage once is enough; no need for both the bare domain and www
     return last_url, None, None
 
 
@@ -182,15 +182,15 @@ def discover(row):
     name = row["company"]
     domain, matched_name = find_domain(name)
     if not domain:
-        return {"company": name, "stage": "没查到域名"}
+        return {"company": name, "stage": "no domain found"}
 
     url, ats, slug = find_ats(domain)
     if not ats:
         return {"company": name, "domain": domain, "matched_name": matched_name,
-                "careers_url": url, "stage": "页面没提取到 ATS 链接"}
+                "careers_url": url, "stage": "no ATS link on page"}
 
     n = validate(ats, slug)
-    stage = "验证通过" if n > 0 else "提取到但验证失败"
+    stage = "verified" if n > 0 else "extracted but not verified"
     return {"company": name, "domain": domain, "matched_name": matched_name,
             "careers_url": url, "ats": ats, "slug": slug, "n_jobs": n, "stage": stage}
 
@@ -198,12 +198,12 @@ def discover(row):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--test", type=int, default=30,
-                     help="测试多少家未解析公司")
+                     help="how many unresolved companies to test")
     ap.add_argument("--sample", choices=["top", "random"], default="top",
-                     help="top=按sponsor_count从高到低取（贴近真实优先级）; "
-                          "random=全量随机抽样（sponsor_count最高的那批几乎全是"
-                          "自建招聘系统的大厂, 不代表长尾公司的命中率）")
-    ap.add_argument("--seed", type=int, default=42, help="--sample random 用的随机种子")
+                     help="top=highest sponsor_count first (closest to real priority); "
+                          "random=random sample of all (the highest sponsor_count rows are mostly "
+                          "big companies with in-house career systems, not representative of the long tail)")
+    ap.add_argument("--seed", type=int, default=42, help="random seed for --sample random")
     args = ap.parse_args()
 
     done = set()
@@ -213,7 +213,7 @@ def main():
                 done |= {r["company"].strip().lower() for r in csv.DictReader(f)}
 
     if not os.path.exists("sponsors.csv"):
-        sys.exit("找不到 sponsors.csv")
+        sys.exit("Cannot find sponsors.csv")
     with open("sponsors.csv", encoding="utf-8-sig") as f:
         rows = [{"company": r["raw_name"].strip(), "count": int(r["sponsor_count"])}
                 for r in csv.DictReader(f)
@@ -222,28 +222,28 @@ def main():
     if args.sample == "random":
         random.Random(args.seed).shuffle(rows)
         rows = rows[:args.test]
-        print(f"测试 {len(rows)} 家（随机抽样, seed={args.seed}, 目前还没解析出 ATS 的公司）\n")
+        print(f"Testing {len(rows)} companies (random sample, seed={args.seed}, no ATS resolved yet)\n")
     else:
         rows.sort(key=lambda r: -r["count"])
         rows = rows[:args.test]
-        print(f"测试 {len(rows)} 家（sponsor_count 最高、目前还没解析出 ATS 的公司）\n")
+        print(f"Testing {len(rows)} companies (highest sponsor_count, no ATS resolved yet)\n")
 
     results = []
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         for i, (row, res) in enumerate(zip(rows, ex.map(discover, rows)), 1):
             results.append(res)
-            extra = (f" {res['ats']}:{res['slug']} ({res.get('n_jobs', 0)} 个在招)"
+            extra = (f" {res['ats']}:{res['slug']} ({res.get('n_jobs', 0)} open)"
                      if res.get("ats") else "")
             domain_info = f" [{res['domain']}]" if res.get("domain") else ""
             print(f"[{i}/{len(rows)}] {row['company'][:36]:<38} {res['stage']}{domain_info}{extra}")
 
-    hit = [r for r in results if r["stage"] == "验证通过"]
+    hit = [r for r in results if r["stage"] == "verified"]
     print(f"\n{'='*54}")
-    print(f"命中: {len(hit)}/{len(results)} ({100 * len(hit) / len(results):.0f}%)")
+    print(f"Hits: {len(hit)}/{len(results)} ({100 * len(hit) / len(results):.0f}%)")
     for stage, n in Counter(r["stage"] for r in results).most_common():
         print(f"  {stage:<20} {n}")
     if hit:
-        print(f"\n命中的岗位合计: {sum(r['n_jobs'] for r in hit):,}")
+        print(f"\nTotal postings at hit companies: {sum(r['n_jobs'] for r in hit):,}")
     print("=" * 54)
 
 

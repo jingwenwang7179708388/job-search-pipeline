@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-resolve_slugs.py —— 把公司名解析成招聘系统(ATS)里的真实 slug
-用法: python3 resolve_slugs.py companies_new.csv
+resolve_slugs.py - resolve company names to their real slug in each applicant tracking system (ATS)
+Usage: python3 resolve_slugs.py companies_new.csv
 """
 
 import csv
@@ -72,7 +72,7 @@ def try_smartrecruiters(slug):
     if not r.ok:
         return 0
     d = r.json()
-    return int(d.get("totalFound", 0))      # 必须查 totalFound，否则它对谁都说 OK
+    return int(d.get("totalFound", 0))      # must check totalFound, otherwise it answers OK for any name
 
 
 def try_recruitee(slug):
@@ -108,8 +108,8 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
 
-    # 增量合并, 不覆盖: companies.csv 里已经手动并进去过 workday 那批,
-    # 之前这里是直接覆盖写, 再跑一次会把那些冲掉。
+    # Merge incrementally instead of overwriting: the Workday batch was merged into companies.csv
+    # by hand, and the previous overwrite here would wipe it on the next run.
     existing = []
     already = set()
     if os.path.exists("companies.csv"):
@@ -122,8 +122,8 @@ def main():
                 if r.get("company", "").strip()
                 and r["company"].strip().lower() not in already]
 
-    print(f"{len(rows)} 家公司待解析（已跳过 companies.csv 里 {len(already)} 家）, "
-          f"开始解析（每家最多试 5 个名字 x 6 个平台）...\n")
+    print(f"{len(rows)} companies to resolve ({len(already)} already in companies.csv skipped), "
+          f"starting (up to 5 names x 6 platforms each)...\n")
 
     found, missing, n_done = [], [], 0
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
@@ -132,11 +132,11 @@ def main():
             if res:
                 found.append(res)
                 print(f"[{n_done}/{len(rows)}] OK {row['company'][:34]:<36} "
-                      f"{res['ats']}:{res['slug']} ({res['n_jobs']} 个在招)")
+                      f"{res['ats']}:{res['slug']} ({res['n_jobs']} open)")
             else:
                 missing.append(row["company"])
             if n_done % 25 == 0:
-                print(f"    ...已完成 {n_done}, 命中 {len(found)}")
+                print(f"    ...done {n_done}, hits {len(found)}")
 
     with open("companies.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["company", "ats", "slug", "priority"],
@@ -149,9 +149,9 @@ def main():
         f.write("\n".join(missing))
 
     print(f"\n{'='*50}")
-    print(f"解析成功: {len(found)} 家（新增）, companies.csv 现在共 {len(existing) + len(found)} 家")
-    print(f"没找到:   {len(missing)} 家  -> unresolved.txt")
-    print(f"这些公司当前在招岗位合计: {sum(r['n_jobs'] for r in found):,}")
+    print(f"Resolved: {len(found)} new, companies.csv now has {len(existing) + len(found)}")
+    print(f"Not found: {len(missing)}  -> unresolved.txt")
+    print(f"Open postings at these companies: {sum(r['n_jobs'] for r in found):,}")
     print("=" * 50)
 
 

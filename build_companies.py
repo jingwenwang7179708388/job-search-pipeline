@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-build_companies.py — 从劳工部 H-1B 数据里生成目标公司清单
+build_companies.py - build the target-company list from DOL H-1B disclosure data
 
-思路: 谁真的给 Data Scientist / MLE 办过签证, 谁就进清单。
-不靠猜, 靠政府数据。
+Idea: a company that has actually sponsored Data Scientist / MLE visas goes on the list.
+No guessing: it comes from government data.
 
-用法:
+Usage:
     pip install pandas openpyxl
     python build_companies.py LCA_Disclosure_Data_FY2025.xlsx
-    python build_companies.py FY2025.xlsx FY2026_Q2.xlsx      # 多个文件一起
+    python build_companies.py FY2025.xlsx FY2026_Q2.xlsx      # several files at once
 
-输出:
-    sponsors.csv        —— 完整名单, 按 sponsor 次数排序
-    companies_new.csv   —— 可以直接喂给 job_feed.py 的格式
+Output:
+    sponsors.csv        - full list, sorted by sponsorship count
+    companies_new.csv   - in the format job_feed.py reads
 """
 
 
@@ -21,7 +21,7 @@ import re
 import sys
 import pandas as pd
 
-# 你的目标职位 —— 职位名里出现这些词就算命中
+# Target titles: a title containing any of these counts as a match
 TITLES = [
     "data scientist", "applied scientist", "decision scientist",
     "machine learning", "ml engineer", "deep learning",
@@ -31,11 +31,11 @@ TITLES = [
     "computer vision", "remote sensing", "geospatial",
 ]
 
-# 排除的职位 —— 这些是资深岗, 不是你的池子
+# Excluded titles: senior roles, outside the target pool
 TITLE_SKIP = ["senior", "sr ", "sr.", "staff", "principal", "lead ", "manager",
               "director", "architect", "vice president", " iii", " iv"]
 
-# 外包/咨询公司 —— 它们霸占 H-1B 数据榜首, 但不是你要去的地方
+# Staffing/consulting firms: they top the H-1B data but are not target employers
 BODYSHOPS = [
     "infosys", "tata consultancy", "cognizant", "wipro", "accenture", "hcl",
     "capgemini", "tech mahindra", "larsen", "lti mindtree", "ltimindtree",
@@ -48,19 +48,19 @@ BODYSHOPS = [
     "technologies inc", "infotech", "softech", "systems inc","university", "college", "institute of technology", "school of",
     "hospital", "medical center", "health system", "national laborator",
     "research institute", "academy", "foundation", "trustees of",
-    # 国家实验室运营方: 公司名往往不含 "national laborator" 字样（比如
-    # "UChicago Argonne LLC"), 上面那条规则抓不住, 单独列出运营方名字。
+    # National-lab operators: the company name often lacks "national laborator" (e.g.
+    # "UChicago Argonne LLC"), so the rule above misses them; list the operators by name.
     "argonne",
 ]
 
-# 只看这些州（改成你愿意去的地方；留空 = 全美）
-STATES = []          # 例: ["CA", "NY", "WA", "MA", "IL", "TX"]
+# Only these states (set to where you would work; empty = all of the US)
+STATES = []          # e.g. ["CA", "NY", "WA", "MA", "IL", "TX"]
 
-MIN_COUNT = 1        # 至少 sponsor 过几次才进清单
+MIN_COUNT = 1        # minimum number of sponsorships to make the list
 
 
 def find_col(df, *keys):
-    """列名各年份不一样, 模糊匹配。"""
+    """Column names differ between fiscal years; match them fuzzily."""
     for c in df.columns:
         norm = re.sub(r"[^a-z]", "", str(c).lower())
         if all(re.sub(r"[^a-z]", "", k) in norm for k in keys):
@@ -76,12 +76,12 @@ def clean_name(name):
 
 
 def load(path):
-    print(f"读取 {path} ...")
+    print(f"Reading {path} ...")
     if path.lower().endswith((".csv", ".txt")):
         df = pd.read_csv(path, low_memory=False)
     else:
         df = pd.read_excel(path)
-    print(f"  {len(df):,} 行")
+    print(f"  {len(df):,} rows")
     return df
 
 
@@ -96,49 +96,61 @@ def main():
         job = find_col(df, "job", "title")
         st = find_col(df, "worksite", "state") or find_col(df, "employer", "state")
         status = find_col(df, "case", "status")
+        case = find_col(df, "case", "number")
         if not (emp and job):
-            print(f"  跳过：找不到公司名或职位名列。实际列名: {list(df.columns)[:12]}")
+            print(f"  Skipped: no employer-name or job-title column. Actual columns: {list(df.columns)[:12]}")
             continue
         sub = pd.DataFrame({
             "employer": df[emp],
             "title": df[job],
             "state": df[st] if st else "",
             "status": df[status] if status else "CERTIFIED",
+            "case": df[case] if case else pd.NA,
         })
         frames.append(sub)
 
     if not frames:
-        sys.exit("没读到有效数据")
+        sys.exit("No valid data was read")
 
     df = pd.concat(frames, ignore_index=True)
-    print(f"\n合计 {len(df):,} 条申请记录")
+    print(f"\nTotal {len(df):,} application records")
 
-    # 只要批准的
+    # Some DOL quarterly files are cumulative (e.g. FY2021_Q3 covers Q1-Q3), so the same
+    # case shows up in several files. Keep the last occurrence: later files carry the
+    # latest status (e.g. Certified -> Certified - Withdrawn).
+    has_case = df["case"].notna()
+    df = pd.concat([
+        df[has_case].drop_duplicates("case", keep="last"),
+        df[~has_case],
+    ], ignore_index=True)
+    print(f"After de-duplicating by case number: {len(df):,}")
+
+    # Certified petitions only
     df = df[df["status"].astype(str).str.upper().str.contains("CERTIFIED", na=False)]
     df = df[~df["status"].astype(str).str.upper().str.contains("WITHDRAWN", na=False)]
-    print(f"批准的: {len(df):,}")
+    print(f"Certified: {len(df):,}")
 
-    t = df["title"].astype(str).str.lower()
+    t = df["title"].fillna("").astype(str).str.lower()
     df = df[t.apply(lambda x: any(k in x for k in TITLES))]
-    print(f"职位对口: {len(df):,}")
+    print(f"Matching titles: {len(df):,}")
 
-    t = df["title"].astype(str).str.lower()
+    t = df["title"].fillna("").astype(str).str.lower()
     df = df[~t.apply(lambda x: any(k in x for k in TITLE_SKIP))]
-    print(f"去掉资深岗: {len(df):,}")
+    print(f"After removing senior roles: {len(df):,}")
 
     if STATES:
         df = df[df["state"].astype(str).str.upper().str[:2].isin(STATES)]
-        print(f"限定州: {len(df):,}")
+        print(f"After state filter: {len(df):,}")
 
     df["clean"] = df["employer"].apply(clean_name)
     low = df["clean"].str.lower()
     df = df[~low.apply(lambda x: any(b in x for b in BODYSHOPS))]
-    print(f"去掉外包/咨询: {len(df):,}")
+    print(f"After removing staffing/consulting: {len(df):,}")
 
     g = df.groupby("clean").agg(
         sponsor_count=("title", "size"),
         titles=("title", lambda s: " | ".join(sorted(set(s))[:4])),
-        states=("state", lambda s: ", ".join(sorted(set(str(x)[:2] for x in s))[:5])),
+        states=("state", lambda s: ", ".join(sorted(set(str(x)[:2] for x in s.dropna()))[:5])),
         raw_name=("employer", "first"),
     ).reset_index()
 
@@ -156,11 +168,11 @@ def main():
     out.to_csv("companies_new.csv", index=False, encoding="utf-8-sig")
 
     print(f"\n{'='*50}")
-    print(f"目标公司: {len(g):,} 家")
-    print(f"  sponsors.csv       完整名单（带职位和州）")
-    print(f"  companies_new.csv  喂给 job_feed.py 用的")
+    print(f"Target companies: {len(g):,}")
+    print(f"  sponsors.csv       full list (with titles and states)")
+    print(f"  companies_new.csv  input for job_feed.py")
     print("=" * 50)
-    print("\nsponsor 次数最多的 25 家:\n")
+    print("\nTop 25 companies by sponsorship count:\n")
     for _, r in g.head(25).iterrows():
         print(f"  {r['sponsor_count']:>4}  {str(r['raw_name'])[:38]:<40} {str(r['titles'])[:44]}")
 

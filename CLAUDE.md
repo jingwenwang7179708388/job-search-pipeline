@@ -52,8 +52,15 @@ than the surrounding logic.
    JD actually require years of professional experience," so that judgment call is delegated to
    an LLM. Requires `GROQ_API_KEY` to be set; the script exits immediately with a clear message
    if it isn't. Results are cached to `ng_cache.json` keyed by `job_id`, so a job already
-   classified is never re-sent to the LLM on a later run. Only the first `NG_DESC_CHARS`
-   (1500) characters of the JD are sent. The candidate's graduation term/degree (`GRAD_TERM`,
+   classified is never re-sent to the LLM on a later run. Failed classifications (reason
+   starts with `classification failed`) are deliberately NOT cached and NOT added to `seen_jobs.json`, so
+   they retry on the next run; `check_groq()` aborts the whole run up front on a bad key (401)
+   or a retired model (404) instead of emitting a CSV full of failures. The LLM gets a
+   `NG_DESC_CHARS` (1500) character excerpt built by `ng_excerpt()` — the JD's opening plus
+   windows around every years/degree/graduation mention — not the first 1500 characters,
+   which are almost always company boilerplate with no requirements in them. The free tier's
+   binding limit is tokens per minute, not requests, hence the low `NG_RATE_LIMIT_RPM`; a
+   full run takes tens of minutes. The candidate's graduation term/degree (`GRAD_TERM`,
    `GRAD_DEGREE`) and the model used (`GROQ_MODEL`) are constants at the top of the file, same
    spirit as the other profile constants — edit those, not the classification logic, when the
    situation changes (e.g. next semester, or switching models if the free tier's rate limits or
@@ -80,6 +87,9 @@ debugging `resolve_workday.py` — not part of the pipeline, run ad hoc.
   add a fetcher that splits the pipe-delimited `slug` (`tenant|wd_number|site`) and hits
   `https://{tenant}.{wd_number}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs` — the working
   POST shape is already proven out in `resolve_workday.py`'s `probe()` and `test_wd.py`.
+- **`TITLE_EXCLUDE` matches whole words** (`_word_hit`), so entries are bare tokens (`"ii"`,
+  `"sr"`, `"intern"`) — don't add padding spaces to fake a boundary. Interns/co-ops are
+  excluded there: the owner wants new-grad full-time roles only.
 - **Company name → slug matching is heuristic**, not authoritative. `clean_name()` /
   `candidates()` / `tenants()` in the different scripts each reimplement similar (but not
   identical) legal-suffix-stripping regexes independently — don't assume changing one keeps the
@@ -88,8 +98,8 @@ debugging `resolve_workday.py` — not part of the pipeline, run ad hoc.
   durable, hand-curated-ish company lists; `seen_jobs.json` and `jobs_YYYY-MM-DD.csv` are
   generated/dated outputs from `job_feed.py` runs. `unresolved.txt` is overwritten each run of
   `resolve_slugs.py` / `job_feed.py`, not appended.
-- All scripts print progress/results in Chinese to stdout; keep console output consistent with
-  the existing style when editing.
+- Everything in this repo is in English: code, comments, docstrings, console output and the LLM
+  prompt. Do not add Chinese text anywhere when editing.
 
 ## Dependencies
 

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-job_feed.py —— 每日岗位聚合器
-用法: python3 job_feed.py          只看今天新出现的
-      python3 job_feed.py --all    看全部在招
-      python3 job_feed.py --limit 20   只送前 20 个命中岗位去做 LLM 打分（验证效果/耗时用）
+job_feed.py - daily job posting aggregator
+Usage: python3 job_feed.py          only postings that are new since the last run
+       python3 job_feed.py --all    all currently open postings
+       python3 job_feed.py --limit 20   send only the first 20 matches to the LLM (to check quality/latency)
 """
 
 import argparse
 import csv
+import html
 import json
 import os
 import re
@@ -18,9 +19,9 @@ from datetime import datetime
 
 import requests
 
-# ------------------------------------------------ 你的画像，改这里就改了筛选逻辑
+# ------------------------------------------------ Candidate profile: edit here to change the filtering
 
-# New Grad 分类用的候选人信息, 换人/换学期改这两行就行
+# Candidate info used by the new-grad classifier; change these two lines for a new person or term
 GRAD_TERM = "Spring 2027"
 GRAD_DEGREE = "Master's (MS)"
 
@@ -33,15 +34,24 @@ TITLE_INCLUDE = [
     "computer vision", "remote sensing", "geospatial", "perception engineer",
 ]
 
+# Matched as whole words (see title_ok), so there is no need for padded entries like "ii "/"vp "
+# to fake a word boundary. Those missed "Research Scientist II" (II at the end),
+# "Data Scientist II," and "Sr Data Scientist" (no period).
 TITLE_EXCLUDE = [
-    "senior", "sr.", "staff", "principal", "lead", "manager", "director",
-    "head of", "vp ", "vice president", "architect", "ii ", "iii", " iv",
+    "senior", "sr", "staff", "principal", "lead", "manager", "director",
+    "head of", "vp", "vice president", "architect", "ii", "iii", "iv",
+    "2", "3", "4", "5", "mid level", "mid-level",
     "distinguished", "fellow",
+    # Full-time new-grad roles only: no internships or co-ops
+    "intern", "interns", "internship", "internships", "co-op", "coop", "werkstudent", "praktikum",
+    # "research scientist/engineer" and "geospatial" are broad and pull in non-DS/ML roles
+    "linguist", "chemistry", "clinical", "biology",
 ]
 
 BOOST = {
-    "new grad": 30, "university grad": 30, "early career": 25, "entry level": 25,
-    "2027": 25, "campus": 20, "graduate": 10, "intern": 15, "co-op": 15,
+    "new grad": 30, "new college grad": 30, "university grad": 30,
+    "early career": 25, "entry level": 25,
+    "2027": 25, "campus": 20, "graduate": 10,
     "llm": 12, "nlp": 8, "recommendation": 8, "forecasting": 8,
     "remote sensing": 20, "satellite": 20, "geospatial": 20, "computer vision": 12,
     "quantitative": 12, "pytorch": 8,
@@ -52,6 +62,7 @@ VISA_RED_FLAGS = [
     "not able to sponsor", "no visa sponsorship", "without sponsorship",
     "not provide sponsorship", "without the need for sponsorship",
     "us citizen", "u.s. citizen", "security clearance", "green card holder only",
+    "ts/sci", "top secret", "secret clearance", "active clearance",
     "must be authorized to work in the united states without",
 ]
 
@@ -63,8 +74,8 @@ US_HINTS = [
     "philadelphia", "houston", "san jose", "palo alto", "mountain view",
     "santa monica", "culver city", "pasadena", "glendale", "irvine", "san diego",
     "menlo park", "oakland", "sunnyvale", "bellevue", "remote",
-    # 州全名兜底: 原来只覆盖了几个大都市/加州湾区, workday 岗位地点经常是
-    # "Charlotte-NC" 这种非热门城市, 州名不全就会被当成非美国漏掉。
+    # Full state names as a fallback: the original list only covered a few big metros and the
+    # Bay Area, but Workday locations are often smaller cities ("Charlotte-NC") that got dropped.
     "alabama", "alaska", "arizona", "arkansas", "colorado", "connecticut",
     "delaware", "florida", "georgia", "hawaii", "idaho", "indiana", "iowa",
     "kansas", "kentucky", "louisiana", "maine", "maryland", "michigan",
@@ -73,10 +84,10 @@ US_HINTS = [
     "north dakota", "ohio", "oklahoma", "rhode island", "south carolina",
     "south dakota", "tennessee", "utah", "vermont", "virginia",
     "west virginia", "wisconsin", "wyoming", "district of columbia",
-    # workday 常见格式是两位州代码而不是全名（"Charlotte-NC"), 全名兜不住,
-    # 补上代码。跳过 or/hi/in/ok/co/ma/mo/oh —— 分别对应俄勒冈/夏威夷/印第
-    # 安纳/俄克拉荷马/科罗拉多/马萨诸塞/密苏里/俄亥俄, 太容易撞到英文常用词
-    # (or/hi/in/ok 等), 这几个州改用城市名兜底（波士顿/丹佛已经在上面了）。
+    # Workday usually gives a two-letter state code rather than the full name ("Charlotte-NC"),
+    # so add the codes. Skip or/hi/in/ok/co/ma/mo/oh (Oregon, Hawaii, Indiana, Oklahoma,
+    # Colorado, Massachusetts, Missouri, Ohio): they collide with common English words.
+    # Those states are covered by city names instead (Boston and Denver are already above).
     "al", "ak", "az", "ar", "ct", "de", "fl", "ga", "ia", "id", "il",
     "ks", "ky", "la", "md", "me", "mi", "mn", "ms", "mt", "nc", "nd",
     "ne", "nh", "nj", "nm", "nv", "pa", "ri", "sc", "sd", "tn", "tx",
@@ -85,8 +96,8 @@ US_HINTS = [
     "oklahoma city", "tulsa", "kansas city", "st. louis", "honolulu",
 ]
 
-# ca/ny/sf 这种短代码用裸子串匹配会跟 "location" 里的 "ca" 这类词撞车,
-# 短代码（不含空格/标点）一律走单词边界匹配, 长短语走原来的子串匹配。
+# Short codes like ca/ny/sf collide with substrings (the "ca" in "location") under plain
+# substring matching, so bare codes use word-boundary matching and longer phrases use substrings.
 def _kw_hit(loc, kw):
     if re.fullmatch(r"[a-z]+", kw):
         return re.search(rf"\b{kw}\b", loc) is not None
@@ -97,11 +108,14 @@ def _kw_hit(loc, kw):
 HEADERS = {"User-Agent": "Mozilla/5.0 (job-feed personal script)"}
 TIMEOUT = 20
 SEEN_FILE = "seen_jobs.json"
-NG_CACHE_FILE = "ng_cache.json"  # job_id -> {status, reason, evidence}, 打过分的不再重新调用
-NG_DESC_CHARS = 1500  # JD 只截前这么多字符喂给 LLM, 省 token
+NG_CACHE_FILE = "ng_cache.json"  # job_id -> {status, reason, evidence}; classified jobs are not re-sent
+NG_DESC_CHARS = 1500  # max length of the JD excerpt sent to the LLM, to save tokens (see ng_excerpt)
+NG_HEAD_CHARS = 300  # opening of the JD always kept in the excerpt, for role context
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"  # 换模型/调速度就改这行
-NG_RATE_LIMIT_RPM = 20  # Groq 免费层限额因模型而异, 429 打得多就调低这个值
+GROQ_MODEL = "openai/gpt-oss-120b"  # change this line to switch models or speed
+# Groq free-tier limits vary by model; lower this value if 429s are frequent. gpt-oss-120b is
+# capped at 8,000 tokens per minute and one call uses ~1,200, so tokens bind before requests do.
+NG_RATE_LIMIT_RPM = 5
 NG_MIN_INTERVAL = 60.0 / NG_RATE_LIMIT_RPM
 _last_ng_call_at = [0.0]
 
@@ -116,9 +130,11 @@ def _throttle_ng_call():
 def strip_html(text):
     if not text:
         return ""
+    # Greenhouse "content" is HTML-escaped (&lt;p&gt;...), so unescape before stripping tags;
+    # otherwise the tags stay in the text and waste the LLM's character budget.
+    text = html.unescape(text)
     text = re.sub(r"<[^>]+>", " ", text)
-    text = (text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
-                .replace("&nbsp;", " ").replace("&#39;", "'").replace("&quot;", '"'))
+    text = html.unescape(text).replace("\xa0", " ")
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -130,7 +146,8 @@ def fetch_greenhouse(slug):
         "title": j.get("title", ""),
         "location": (j.get("location") or {}).get("name", ""),
         "url": j.get("absolute_url", ""),
-        "posted": (j.get("updated_at") or "")[:10],
+        # updated_at is the last edit time, so an edited old posting would wrongly get the freshness boost
+        "posted": (j.get("first_published") or j.get("updated_at") or "")[:10],
         "desc": strip_html(j.get("content", "")),
         "job_id": f"gh:{slug}:{j.get('id')}",
     } for j in r.json().get("jobs", [])]
@@ -181,9 +198,12 @@ def fetch_smartrecruiters(slug):
         if not items:
             break
         for j in items:
-            
             title = j.get("name", "")
             loc = j.get("location") or {}
+            # country is a lowercase ISO-2 code; appended to location, "de" (Germany) would be
+            # read by is_us as Delaware, so filter on the explicit country code here instead.
+            if (loc.get("country") or "us").lower() != "us":
+                continue
             rec = {
                 "title": title,
                 "location": ", ".join(x for x in [loc.get("city"), loc.get("region"),
@@ -246,11 +266,11 @@ _WD_N_LOCATIONS = re.compile(r"^\d+\s+locations?$", re.I)
 
 
 def _workday_path_location(path):
-    """从岗位详情页 URL 里解析真实地点。
+    """Parse the real location from the posting's detail-page URL.
 
-    列表接口对多地点岗位只给 "2 Locations" 这种占位符, 看不出到底是不是美国
-    （实测藏着新加坡/中国/台湾等海外岗）; 但详情页 URL 里编码了这条岗位具体
-    对应的那一个地点（如 /job/Taichung---Fab-16-Taiwan/...), 比列表接口准。
+    For multi-location postings the list API only returns a placeholder like "2 Locations",
+    which hides whether the role is in the US (in practice: Singapore, China, Taiwan...). The
+    detail URL encodes the specific location (e.g. /job/Taichung---Fab-16-Taiwan/...).
     """
     m = re.match(r"^/job/([^/]+)/", path)
     return re.sub(r"-+", " ", m.group(1)).strip() if m else ""
@@ -262,9 +282,9 @@ def fetch_workday(slug):
     list_url = f"{base}/wday/cxs/{tenant}/{site}/jobs"
     out, seen_ids, offset, page, total = [], set(), 0, 0, None
     while True:
-        # 同一 tenant 连翻页翻太快会被限流: HTTP 200 但空 body, 不是真的没数据了。
-        # 实测加个提前的 pause（而不是失败了再退避）才稳: 事后重试时冷却期明显更长,
-        # 提前按节奏来基本不会触发。第一页不用等, 之后每页先停一下再请求。
+        # Paging one tenant too fast triggers rate limiting: HTTP 200 with an empty body, not a
+        # real end of data. Pausing up front is more reliable than backing off after a failure
+        # (the cooldown after a failure is much longer). No wait before the first page.
         if page > 0:
             time.sleep(1.5)
         d = None
@@ -316,10 +336,10 @@ def fetch_workday(slug):
                     pass
             out.append(rec)
         offset += len(postings)
-        # 实测有的 tenant（如 phreesia）翻过真实总数之后不会返回空 jobPostings,
-        # 而是把最后一页原样再吐一次——不能只拿"这页是不是空的"当翻页终点,
-        # 会陷入重复翻页直到硬顶。改用第一页读到的 total（唯一准的一次）做终点;
-        # job_id 去重是防这种重复页混进结果的兜底。total 拿不到时退回硬顶兜底。
+        # Some tenants (e.g. phreesia) do not return an empty jobPostings past the real total;
+        # they repeat the last page, so "is this page empty" cannot be the only stop condition
+        # (it would loop until the hard cap). Stop on the total read from the first page;
+        # job_id dedup is the backstop for repeated pages, and the hard cap covers a missing total.
         if total and offset >= total:
             break
         if offset > 2000:
@@ -331,10 +351,14 @@ FETCHERS = {"greenhouse": fetch_greenhouse, "lever": fetch_lever, "ashby": fetch
             "smartrecruiters": fetch_smartrecruiters, "recruitee": fetch_recruitee,
             "workday": fetch_workday, "workable": fetch_workable}
 
+def _word_hit(text, kw):
+    return re.search(rf"(?<![a-z0-9]){re.escape(kw)}(?![a-z0-9])", text) is not None
+
+
 def title_ok(title):
     t = title.lower()
     return (any(k in t for k in TITLE_INCLUDE)
-            and not any(k in t for k in TITLE_EXCLUDE))
+            and not any(_word_hit(t, k) for k in TITLE_EXCLUDE))
 
 
 def is_us(location):
@@ -352,8 +376,8 @@ def is_us(location):
               "switzerland", "austria", "belgium", "poland", "romania",
               "russia", "ukraine", "turkey", "germany", "canberra", "melbourne",
               "brisbane", "perth",
-              # workday 的 remote 岗位常用 ISO 三字码标国家（如 "Remote-IND"),
-              # 短代码走 _kw_hit 的单词边界匹配, 不会跟 "Indianapolis" 这类词撞车
+              # Workday remote postings often mark the country with an ISO-3 code ("Remote-IND");
+              # short codes use _kw_hit word-boundary matching, so they do not hit "Indianapolis"
               "ind", "deu", "gbr", "twn", "chn", "sgp", "aus", "jpn", "kor",
               "fra", "esp", "ita", "nld", "pol", "bra", "irl", "isr",
               "phl", "vnm", "tha", "idn", "mys", "nzl", "che", "arg", "col",
@@ -363,8 +387,8 @@ def is_us(location):
     return any(_kw_hit(loc, k) for k in US_HINTS)
 
 
-def visa_flag(desc):
-    d = desc.lower()
+def visa_flag(title, desc):
+    d = (title + " " + desc).lower()
     hits = [k for k in VISA_RED_FLAGS if k in d]
     return "; ".join(hits[:2]) if hits else ""
 
@@ -381,35 +405,71 @@ def score(job):
     return s
 
 
-NG_SYSTEM_PROMPT = f"""你在帮一个求职者判断职位是否对应届生（New Grad）友好。
+NG_SYSTEM_PROMPT = f"""You are helping a job seeker decide whether a posting is new-grad friendly.
 
-候选人背景: {GRAD_TERM} 毕业, {GRAD_DEGREE} 在读, 没有全职工作经验（实习/co-op 除外）。
+Candidate background: graduating {GRAD_TERM}, currently pursuing a {GRAD_DEGREE}, no full-time work experience (internships/co-ops aside).
 
-排除(excluded), 满足任一条即排除:
-1. JD 里出现 "X+ years of experience" 或 "X-Y years" 且 X>=1, 并且没有说明实习/co-op
-   时长可以折算进去
-2. JD 同时要求年限经验（"X+ years"）和 "Master's/PhD required" —— 这个组合基本永远
-   不是校招岗, 不管 title 写的是什么
-3. title 或职级词带 Senior/Staff/Principal/Lead/II/III/Manager/Director
+Exclude (excluded) if ANY of the following holds:
+1. The JD says "X+ years of experience" or "X-Y years" with X>=1, and does not say that
+   internship/co-op time can count toward it
+2. The JD requires both years of experience ("X+ years") and "Master's/PhD required"; this
+   combination is almost never a campus role, whatever the title says
+3. The title or level includes Senior/Staff/Principal/Lead/II/III/Manager/Director
+4. Internship/co-op/part-time student roles; the candidate only wants full-time roles after graduation
+5. A degree requirement the candidate cannot meet: PhD only (the title or body says PhD required /
+   PhD New Grad, and a Master's is not also accepted)
 
-New Grad 友好(new_grad_friendly), 满足任一条:
-1. title 或分类带 "New Grad"/"University"/"Graduate"/"Early Career"/"Rotational"
-2. JD 明确写了毕业时间窗口, 且跟候选人的 {GRAD_TERM} 匹配（有重叠就算匹配）
-3. 要求里写 "0-2 years"/"no prior professional experience required"/
-   "currently pursuing a degree" 这类表述
+New-grad friendly (new_grad_friendly) if ANY of the following holds:
+1. The title or category includes "New Grad"/"University"/"Graduate"/"Early Career"/"Rotational"
+2. The JD states a graduation window that matches the candidate's {GRAD_TERM} (any overlap counts)
+3. The requirements say "0-2 years"/"no prior professional experience required"/
+   "currently pursuing a degree" or similar
 
-排除规则和 New Grad 规则同时命中时（比如 title 是 New Grad 但正文写了 3+ years）,
-以排除规则为准。
+When an exclusion rule and a new-grad rule both apply (e.g. the title says New Grad but the body
+says 3+ years), the exclusion rule wins.
 
-如果 JD 没写清楚经验要求, 或者写得很模糊（比如 "some experience preferred" 但没给
-年限), 不要排除, 判 needs_review, 并在 evidence 里给出触发这个判断的原文句子。
+If the JD does not state experience requirements clearly, or is vague (e.g. "some experience preferred"
+with no number of years), do not exclude: return needs_review and quote the triggering sentence in evidence.
 
-注意: 你只能看到职位标题和 JD 正文, 看不出这个岗位是不是来自公司专门的
-University/Campus 招聘页面——这条判断依据你判断不了, 不用考虑。
+Note: you only see the title and the JD text, so you cannot tell whether the posting comes from a
+dedicated University/Campus careers page. Do not consider that signal.
 
-只输出这样的 JSON, 不要有任何其他文字:
-{{"status": "new_grad_friendly" 或 "excluded" 或 "needs_review", "reason": "一句话中文理由", "evidence": "支撑判断的 JD 原文句子, 没有就留空字符串"}}
+Note: the JD you receive is an excerpt, not the full text: a short opening plus every passage that
+mentions years of experience, degrees, graduation dates or new grads, joined by " … ". If the excerpt
+has no years requirement, the full JD has none either; do not return needs_review because "the JD is truncated".
+
+Output only JSON in this form, with no other text:
+{{"status": "new_grad_friendly" or "excluded" or "needs_review", "reason": "one-sentence reason in English", "evidence": "the JD sentence supporting the decision, or an empty string"}}
 """
+
+
+# A JD usually opens with company boilerplate and puts years/degree requirements later; with only
+# the first N characters the LLM sees no evidence and returns needs_review for everything.
+# Extract the relevant passages by keyword instead.
+_NG_SIGNAL = re.compile(
+    r"\byears?\b|\byrs?\b|experience|degree|bachelor|master|\bm\.?s\b|\bb\.?s\b|ph\.?d|"
+    r"doctora|graduat|new grad|recent grad|university|college|student|enrolled|"
+    r"pursuing|early.career|entry.level|\\binterns?(?:hips?)?\\b|co-op|20(?:2[5-9]|30)", re.I)
+NG_WINDOW = 140  # characters kept on each side of every match
+
+
+def ng_excerpt(desc):
+    if len(desc) <= NG_DESC_CHARS:
+        return desc
+    spans = []
+    for m in _NG_SIGNAL.finditer(desc, NG_HEAD_CHARS):
+        a, b = max(NG_HEAD_CHARS, m.start() - NG_WINDOW), min(len(desc), m.end() + NG_WINDOW)
+        if spans and a <= spans[-1][1]:
+            spans[-1][1] = b
+        else:
+            spans.append([a, b])
+    out = desc[:NG_HEAD_CHARS]
+    for a, b in spans:
+        if len(out) + (b - a) > NG_DESC_CHARS:
+            out += " … " + desc[a:a + max(0, NG_DESC_CHARS - len(out))]
+            break
+        out += " … " + desc[a:b]
+    return out
 
 
 def load_ng_cache():
@@ -422,20 +482,48 @@ def save_ng_cache(cache):
     json.dump(cache, open(NG_CACHE_FILE, "w", encoding="utf-8"), ensure_ascii=False)
 
 
+NG_FAILED_PREFIX = "classification failed"
+
+
+def _groq_error(r):
+    try:
+        return r.json()["error"]["message"]
+    except Exception:
+        return r.text[:200]
+
+
+def check_groq(groq_headers):
+    """Probe the API once before the run. A bad key or a retired model would fail identically for
+    every posting, so stop with a clear message instead of writing a CSV full of failures."""
+    try:
+        r = requests.post(GROQ_API_URL, headers=groq_headers, timeout=TIMEOUT, json={
+            "model": GROQ_MODEL, "max_completion_tokens": 1,
+            "messages": [{"role": "user", "content": "hi"}],
+        })
+    except requests.exceptions.RequestException as e:
+        sys.exit(f"Cannot reach the Groq API ({type(e).__name__}); check the network and retry")
+    if r.status_code == 401:
+        sys.exit(f"Invalid GROQ_API_KEY (401: {_groq_error(r)}): check that the key was pasted "
+                  "correctly at console.groq.com/keys")
+    if r.status_code == 404:
+        sys.exit(f"Model {GROQ_MODEL} is unavailable (404: {_groq_error(r)}): "
+                  "change GROQ_MODEL at the top of this file; see console.groq.com/docs/models")
+    if r.status_code not in (200, 429):
+        sys.exit(f"Groq API self-check failed ({r.status_code}: {_groq_error(r)})")
+
+
 def classify_new_grad(groq_headers, job_id, title, company, desc, cache):
     if job_id in cache:
         c = cache[job_id]
         return c["status"], c["reason"], c["evidence"], True
 
-    # Groq 免费额度 RPM 卡得比较紧, 光靠命中了再退避不够——每次调用前用全局节流器
-    # 卡在 NG_RATE_LIMIT_RPM 以内（跟 fetch_workday 里对付 workday 限流是同一个思路),
-    # 429 再在节流之上额外退避重试。
-    user_msg = f"职位: {title}\n公司: {company}\nJD:\n{desc[:NG_DESC_CHARS]}"
-    status, reason, evidence = "needs_review", "分类失败 (重试耗尽)", ""
+    # The Groq free tier is tight and backing off after a 429 is not enough, so a global throttle
+    # keeps calls within NG_RATE_LIMIT_RPM (same idea as the Workday pacing in fetch_workday);
+    # on a 429 we additionally wait for the retry-after given in the response headers.
+    user_msg = f"Title: {title}\nCompany: {company}\nJD excerpt:\n{ng_excerpt(desc)}"
+    status, reason, evidence = "needs_review", f"{NG_FAILED_PREFIX} (retries exhausted)", ""
     for attempt in range(4):
         _throttle_ng_call()
-        if attempt > 0:
-            time.sleep(5.0 * attempt)
         try:
             r = requests.post(GROQ_API_URL, headers=groq_headers, timeout=TIMEOUT, json={
                 "model": GROQ_MODEL,
@@ -447,10 +535,16 @@ def classify_new_grad(groq_headers, job_id, title, company, desc, cache):
                 "temperature": 0,
             })
             if r.status_code == 429:
-                if attempt < 3:
-                    continue
+                reason = f"{NG_FAILED_PREFIX} (429 rate limited, retries exhausted)"
+                try:
+                    wait = float(r.headers.get("retry-after", ""))
+                except ValueError:
+                    wait = 10.0 * (attempt + 1)
+                time.sleep(min(wait + 1, 90))
+                continue
+            if not r.ok:
+                reason = f"{NG_FAILED_PREFIX} (HTTP {r.status_code}: {_groq_error(r)[:80]})"
                 break
-            r.raise_for_status()
             data = json.loads(r.json()["choices"][0]["message"]["content"])
             status = data.get("status", "needs_review")
             if status not in ("new_grad_friendly", "excluded", "needs_review"):
@@ -458,11 +552,14 @@ def classify_new_grad(groq_headers, job_id, title, company, desc, cache):
             reason, evidence = data.get("reason", ""), data.get("evidence", "")
             break
         except Exception as e:
-            status, reason, evidence = "needs_review", f"分类失败 ({type(e).__name__})", ""
+            reason = f"{NG_FAILED_PREFIX} ({type(e).__name__})"
             break
 
-    cache[job_id] = {"status": status, "reason": reason, "evidence": evidence}
-    save_ng_cache(cache)
+    # Failures are not cached. They used to be, and one misconfigured key pinned every posting
+    # to "classification failed" permanently, even after the key was fixed.
+    if not reason.startswith(NG_FAILED_PREFIX):
+        cache[job_id] = {"status": status, "reason": reason, "evidence": evidence}
+        save_ng_cache(cache)
     return status, reason, evidence, False
 
 
@@ -474,18 +571,19 @@ def main():
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--companies", default="companies.csv")
     ap.add_argument("--limit", type=int, default=None,
-                     help="最多送几个命中岗位去做 LLM 打分, 用于验证效果/耗时")
+                     help="max number of matched postings to send to the LLM, to check quality/latency")
     args = ap.parse_args()
 
     groq_key = os.environ.get("GROQ_API_KEY")
     if not groq_key:
-        sys.exit("没有设置 GROQ_API_KEY——New Grad 分类要调 Groq API, "
-                  "去 console.groq.com/keys 免费申请一个, 然后 export GROQ_API_KEY=...")
+        sys.exit("GROQ_API_KEY is not set. New-grad classification calls the Groq API: "
+                  "get a free key at console.groq.com/keys, then export GROQ_API_KEY=...")
     groq_headers = {"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"}
     ng_cache = load_ng_cache()
 
     if not os.path.exists(args.companies):
-        sys.exit(f"找不到 {args.companies}")
+        sys.exit(f"Cannot find {args.companies}")
+    check_groq(groq_headers)
     with open(args.companies, encoding="utf-8-sig") as f:
         companies = [r for r in csv.DictReader(f) if r.get("slug", "").strip()]
 
@@ -494,6 +592,7 @@ def main():
         seen = set(json.load(open(SEEN_FILE)))
 
     results, unresolved = [], []
+    emitted = set()  # when one slug is listed under several company names, emit each posting once
     n_classified, n_cache_hit, ng_elapsed = 0, 0, 0.0
     limit_hit = False
     for i, c in enumerate(companies, 1):
@@ -504,7 +603,7 @@ def main():
         try:
             jobs = FETCHERS[ats](slug) if ats in FETCHERS else []
         except Exception as e:
-            print(f"失败 ({type(e).__name__})")
+            print(f"failed ({type(e).__name__})")
             unresolved.append(f"{name}\t{slug}\t{type(e).__name__}")
             continue
 
@@ -512,7 +611,7 @@ def main():
         for j in jobs:
             if not title_ok(j["title"]) or not is_us(j["location"]):
                 continue
-            if j["job_id"] in seen:
+            if j["job_id"] in seen or j["job_id"] in emitted:
                 continue
             if args.limit is not None and n_classified >= args.limit:
                 limit_hit = True
@@ -524,12 +623,13 @@ def main():
             n_classified += 1
             n_cache_hit += was_cached
             j.update({"company": name, "priority": c.get("priority", ""),
-                      "visa_flag": visa_flag(j["desc"]), "score": score(j),
+                      "visa_flag": visa_flag(j["title"], j["desc"]), "score": score(j),
                       "ng_status": ng_status, "ng_reason": ng_reason,
                       "ng_evidence": ng_evidence})
             results.append(j)
+            emitted.add(j["job_id"])
             kept += 1
-        print(f"{len(jobs)} 个岗位 → {kept} 个命中")
+        print(f"{len(jobs)} postings -> {kept} matched")
         time.sleep(0.3)
 
     results.sort(key=lambda x: (NG_ORDER.get(x["ng_status"], 1), -x["score"], x["company"]))
@@ -544,33 +644,38 @@ def main():
         w.writerows(results)
 
     if not args.all:
-        seen.update(j["job_id"] for j in results)
+        # Failed classifications are not added to seen, so they come back for a retry on the next run
+        seen.update(j["job_id"] for j in results
+                    if not j["ng_reason"].startswith(NG_FAILED_PREFIX))
         json.dump(sorted(seen), open(SEEN_FILE, "w"))
 
     if unresolved:
         with open("unresolved.txt", "w", encoding="utf-8") as f:
-            f.write("公司\tslug\t原因\n" + "\n".join(unresolved))
+            f.write("company\tslug\treason\n" + "\n".join(unresolved))
 
     clean = [j for j in results if not j["visa_flag"]]
     ng_friendly = [j for j in results if j["ng_status"] == "new_grad_friendly"]
     ng_review = [j for j in results if j["ng_status"] == "needs_review"]
     ng_excluded = [j for j in results if j["ng_status"] == "excluded"]
+    ng_failed = [j for j in results if j["ng_reason"].startswith(NG_FAILED_PREFIX)]
     print(f"\n{'='*54}")
-    print(f"新岗位         {len(results)}")
-    print(f"无签证红旗     {len(clean)}")
-    print(f"New Grad 友好  {len(ng_friendly)}   <- 优先看这些")
-    print(f"需要人工确认   {len(ng_review)}")
-    print(f"已排除         {len(ng_excluded)}")
-    print(f"抓取失败       {len(unresolved)}")
-    print(f"输出           {out_csv}")
+    print(f"New postings       {len(results)}")
+    print(f"No visa red flag   {len(clean)}")
+    print(f"New-grad friendly  {len(ng_friendly)}   <- look at these first")
+    print(f"Needs review       {len(ng_review)}")
+    print(f"Excluded           {len(ng_excluded)}")
+    if ng_failed:
+        print(f"Classify failed    {len(ng_failed)}   <- retried on the next run")
+    print(f"Fetch failed       {len(unresolved)}")
+    print(f"Output             {out_csv}")
     if args.limit is not None:
-        print(f"--limit {args.limit}: LLM 打分 {n_classified} 条（缓存命中 {n_cache_hit}, "
-              f"新调用 {n_classified - n_cache_hit}）, 耗时 {ng_elapsed:.1f} 秒")
+        print(f"--limit {args.limit}: {n_classified} sent to the LLM ({n_cache_hit} cache hits, "
+              f"{n_classified - n_cache_hit} new calls), {ng_elapsed:.1f} s")
     print("=" * 54)
     for j in (ng_friendly + ng_review)[:20]:
         tag = "NG" if j["ng_status"] == "new_grad_friendly" else "REVIEW"
         print(f"  {j['score']:>4}  [{tag:6}] {j['company'][:18]:<18} {j['title'][:40]}")
-        print(f"          理由: {j['ng_reason']}")
+        print(f"          reason: {j['ng_reason']}")
 
 
 if __name__ == "__main__":

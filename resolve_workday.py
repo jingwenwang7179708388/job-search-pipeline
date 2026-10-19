@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-resolve_workday.py (v4) —— 给还没解析的公司找 Workday 招聘站
+resolve_workday.py (v4) - find Workday career sites for companies not yet resolved
 
-v3 改动: 去掉「访问根路径拿站点名」那一步（实测根路径返回 406, 不跳转,
-且不存在的租户也返回 406, 完全无法用于判断）。改为直接 POST 穷举站点名。
-并且记录失败原因, 不再静默吞掉。
+v3: dropped the "hit the root path to get the site name" step (the root path returns 406 with no
+redirect, and a nonexistent tenant also returns 406, so it tells nothing). Brute-force the site name
+by POST instead, and record failure reasons rather than swallowing them.
 
-v4 改动: 量大了以后发现大批量跑会命中 0——不是根路径的问题, 是 Workday 对同一
-tenant 短时间内连续请求会限流, 返回 HTTP 200 但空 body, 之前这种情况被当成
-"组合猜错了"直接判 0, 把真命中也一起误杀了。probe() 现在对这种"200 但解析
-不出 JSON"的情况做退避重试, 而不是直接认输。
+v4: large runs were returning 0 hits. The cause was not the root path: Workday rate-limits rapid
+requests to one tenant and returns HTTP 200 with an empty body, which was being counted as a wrong
+guess and wiped out real hits. probe() now backs off and retries on "200 but not JSON" instead of
+giving up.
 
-用法: python3 resolve_workday.py 200
+Usage: python3 resolve_workday.py 200
 """
 
 import csv
@@ -31,9 +31,9 @@ TIMEOUT = 12
 WORKERS = 8
 PAUSE = 0.15
 
-# 原来只试 wd1/wd3/wd5, 实测 Verizon 是 wd12、Nordstrom 是 wd501, 说明数据中心
-# 编号的范围比想象中宽——单双位数字比较常见, 501 这种三位数目前只见过一例,
-# 就不做开放式穷举了（组合数会爆炸), 只加这一个已知命中的当兜底。
+# Originally only wd1/wd3/wd5 were tried, but Verizon is on wd12 and Nordstrom on wd501, so the
+# data-center number range is wider than expected. One- and two-digit numbers are common; a
+# three-digit one has been seen once, so only that known value is added (no open-ended search).
 WD_NUMBERS = ["wd1", "wd2", "wd3", "wd4", "wd5", "wd10", "wd11", "wd12", "wd501"]
 
 LEGAL = (r"\b(INC|LLC|LTD|CORP|CORPORATION|COMPANY|CO|LP|LLP|PLC|PBC|HOLDINGS|"
@@ -69,7 +69,7 @@ def tenants(name):
 
 
 def sites_for(tenant):
-    """站点名的常见写法, 按出现频率排序。"""
+    """Common site-name spellings, ordered by frequency."""
     t = tenant
     return ["External", "ExternalCareerSite", t, "External_Career_Site",
             f"{t}careers", "Careers", f"{t.upper()}ExternalCareerSite",
@@ -77,11 +77,11 @@ def sites_for(tenant):
 
 
 def probe(tenant, wd, site, attempt=1):
-    """返回岗位总数; 0 表示这个组合不对。顺便统计状态码。
+    """Return the total number of postings; 0 means the combination is wrong. Also counts status codes.
 
-    HTTP 200 但 body 解析不出 JSON, 实测是 Workday 对同一 tenant 短时间内连续
-    请求做的限流(空 body), 不代表 tenant/site 猜错了 —— 之前把这种情况直接判 0,
-    量一大就会把真命中也误杀掉。这里退避重试几次, 而不是当场认输。
+    HTTP 200 with a body that is not JSON is Workday rate-limiting rapid requests to one tenant
+    (empty body); it does not mean the tenant/site guess is wrong. Counting it as 0 used to wipe
+    out real hits on large runs, so back off and retry a few times instead.
     """
     url = f"https://{tenant}.{wd}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs"
     try:
@@ -89,7 +89,7 @@ def probe(tenant, wd, site, attempt=1):
                                      "offset": 0, "searchText": ""},
                           headers=HEADERS, timeout=TIMEOUT)
     except Exception as e:
-        STATS[f"异常:{type(e).__name__}"] += 1
+        STATS[f"exception:{type(e).__name__}"] += 1
         return 0
     STATS[f"HTTP {r.status_code}"] += 1
     if not r.ok:
@@ -98,10 +98,10 @@ def probe(tenant, wd, site, attempt=1):
         return int(r.json().get("total", 0))
     except Exception:
         if attempt < 3:
-            STATS["JSON解析失败_重试"] += 1
+            STATS["json_parse_failed_retry"] += 1
             time.sleep(1.0 * attempt)
             return probe(tenant, wd, site, attempt + 1)
-        STATS["JSON解析失败_放弃"] += 1
+        STATS["json_parse_failed_gave_up"] += 1
         return 0
 
 
@@ -132,8 +132,8 @@ def main():
     rows.sort(key=lambda r: -r["count"])
     rows = rows[:top_n]
 
-    print(f"前 {len(rows)} 家, 每家最多 2 租户 x {len(WD_NUMBERS)} 机房 x "
-          f"{len(sites_for('x'))} 站点名\n")
+    print(f"First {len(rows)} companies, up to 2 tenants x {len(WD_NUMBERS)} data centers x "
+          f"{len(sites_for('x'))} site names each\n")
 
     found, n_done = [], 0
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
@@ -142,9 +142,9 @@ def main():
             if res:
                 found.append(res)
                 print(f"[{n_done}/{len(rows)}] OK {row['company'][:30]:<32} "
-                      f"{res['slug']} ({res['n_jobs']} 个在招)")
+                      f"{res['slug']} ({res['n_jobs']} open)")
             if n_done % 25 == 0:
-                print(f"    ...已完成 {n_done}, 命中 {len(found)}")
+                print(f"    ...done {n_done}, hits {len(found)}")
 
     with open("companies_workday.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["company", "ats", "slug", "priority"],
@@ -153,9 +153,9 @@ def main():
         w.writerows(found)
 
     print(f"\n{'='*52}")
-    print(f"找到 Workday 站点: {len(found)} 家 -> companies_workday.csv")
-    print(f"在招岗位合计: {sum(r['n_jobs'] for r in found):,}")
-    print(f"\n请求结果分布（用来判断是被挡了还是名字猜错了）:")
+    print(f"Workday sites found: {len(found)} -> companies_workday.csv")
+    print(f"Open postings: {sum(r['n_jobs'] for r in found):,}")
+    print(f"\nRequest outcome breakdown (to tell blocking from wrong guesses):")
     for k, v in STATS.most_common(8):
         print(f"  {k:<24} {v:,}")
     print("=" * 52)

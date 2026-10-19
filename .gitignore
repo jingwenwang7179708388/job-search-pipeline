@@ -9,3 +9,6 @@ ng_cache.json
 unresolved.txt
 *.xlsx
 feed.log
+corpus.db
+.env
+*.parquet
