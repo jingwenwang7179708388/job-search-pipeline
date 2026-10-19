@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Job Aggregation 更新版流程图</title>
+<style>
+  :root { --blue:#dff1ff; --blue2:#eef8ff; --line:#5186ad; --ink:#17364d; --muted:#607789; --panel:#f7f9fb; --border:#d4dde5; --green:#e4f7ec; --amber:#fff2cf; --red:#ffe6e1; --violet:#eee9ff; }
+  *{box-sizing:border-box} body{margin:0;background:#fff;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;color:var(--ink)}
+  .canvas{width:1800px;margin:0 auto;padding:44px 52px 70px;background:#fff}
+  h1{font-size:34px;text-align:center;margin:0 0 10px} .subtitle{text-align:center;color:var(--muted);font-size:17px;margin-bottom:30px}
+  .row{display:grid;gap:28px;align-items:start;margin-bottom:26px}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}.wide-side{grid-template-columns:2.15fr 1fr}
+  .stage{border:1.5px solid var(--border);border-radius:18px;background:var(--panel);padding:18px 20px 22px;box-shadow:0 3px 12px rgba(26,68,95,.07)}
+  .stage h2{font-size:21px;text-align:center;margin:0 0 16px;color:#193f5b}.stage h2 span{font-weight:500;color:var(--muted);font-size:15px;margin-left:8px}
+  .flow{display:flex;flex-direction:column;align-items:center}.node{min-width:260px;max-width:96%;text-align:center;background:var(--blue);border:1.5px solid #a9d3ef;border-radius:12px;padding:10px 15px;font-size:16px;line-height:1.35;box-shadow:0 2px 5px rgba(45,101,140,.06)}
+  .node.small{min-width:205px;font-size:14px}.node.green{background:var(--green);border-color:#a8d9bb}.node.amber{background:var(--amber);border-color:#e6c76d}.node.red{background:var(--red);border-color:#e5aca2}.node.violet{background:var(--violet);border-color:#c6b9ee}.diamond{background:#fff;border:1.8px solid #81aeca;border-radius:28px;font-weight:700}
+  .arrow{font-size:24px;color:var(--line);line-height:25px;height:28px}.label{font-size:13px;color:#557286;margin:2px 0 4px;font-weight:700}
+  .split{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:18px;position:relative}.branch{display:flex;flex-direction:column;align-items:center}.branch .node{min-width:0;width:100%}
+  .split.threeway{grid-template-columns:1fr 1fr 1fr}.note{font-size:13px;color:#5a7180;text-align:center;margin-top:10px;line-height:1.45}
+  .section-arrow{text-align:center;color:var(--line);font-size:31px;height:40px;line-height:32px;margin:-5px 0 2px}.merge{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}.merge .stage{height:100%}
+  .input-band{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;margin:4px auto 18px;max-width:1050px}.input-band .node{min-width:0}.plus{text-align:center;font-size:32px;color:var(--line);font-weight:700}
+  .loop{border:2px dashed #8c75c7;background:#faf8ff;border-radius:14px;padding:10px 14px;text-align:center;font-size:14px;color:#59488c;margin-top:12px}
+  .db{border:2px solid #88aabf;background:#fff;border-radius:14px;padding:13px;text-align:center;font-weight:700;margin-top:14px}.legend{display:flex;justify-content:center;gap:25px;margin-top:22px;color:#617887;font-size:13px}.dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+</style>
+</head>
+<body><main class="canvas">
+<h1>签证友好的新岗位推荐系统</h1>
+<div class="subtitle">系统运行流程 · 第 7–10 步是反馈循环</div>
+
+<div class="row two">
+  <section class="stage"><h2>一、外部数据准备</h2><div class="flow">
+    <div class="node">下载 DOL LCA 数据<br><small>FY2020–2026，全部季度，按 CASE_NUMBER 去重</small></div><div class="arrow">↓</div>
+    <div class="node">清洗公司名和职位名</div><div class="arrow">↓</div>
+    <div class="node">把历史职位分到三个方向<br><small>Analytics · Data Science · ML/AI</small></div><div class="arrow">↓</div>
+    <div class="node green">目标公司名单（10,235 家）+ 每家的签证证据</div>
+  </div></section>
+  <section class="stage"><h2>二、公司和 ATS 映射</h2><div class="flow">
+    <div class="node">用公司名猜 6 个平台的账号<br><small>Greenhouse · Lever · Ashby · SmartRecruiters · Recruitee · Workable</small></div><div class="arrow">↓</div>
+    <div class="node">Workday：枚举站点名逐个验证</div><div class="arrow">↓</div><div class="node diamond">验证通过且不是撞名？</div><div class="arrow">↓</div>
+    <div class="split"><div class="branch"><div class="label">否</div><div class="node red">标记为 unresolved</div></div><div class="branch"><div class="label">是</div><div class="node green">保存 ATS 类型和地址</div><div class="arrow">↓</div><div class="node">设置抓取频率<br><small>2小时 / 6小时 / 24小时</small></div></div></div>
+  </div></section>
+</div>
+<div class="section-arrow">↓</div>
+
+<section class="stage"><h2>三、定时职位抓取与入库 <span>识别新岗位、更新岗位与关闭岗位</span></h2><div class="flow">
+  <div class="node">定时读取 ATS 来源并请求岗位</div><div class="arrow">↓</div><div class="node">解析岗位并统一基本字段格式</div><div class="arrow">↓</div><div class="node diamond">该岗位是否已经存在？</div><div class="arrow">↓</div>
+  <div class="split">
+    <div class="branch"><div class="label">不存在</div><div class="node green">插入 jobs 表<br>设置 first_seen_at</div><div class="arrow">↓</div><div class="node green">输出：New position</div></div>
+    <div class="branch"><div class="label">已存在</div><div class="node">更新 last_seen_at</div><div class="arrow">↓</div><div class="node diamond">标题、地点或经验要求变了吗？<br><small>JD 先清洗：去掉日期、空格、格式</small></div><div class="arrow">↓</div><div class="split"><div class="branch"><div class="label">是</div><div class="node amber small">更新内容并保存快照<br>输出：Updated position</div></div><div class="branch"><div class="label">否</div><div class="node small">不重复处理</div></div></div></div>
+  </div>
+  <div class="arrow">↓</div><div class="node diamond">这一轮抓取成功并返回了岗位吗？</div><div class="arrow">↓</div>
+  <div class="split"><div class="branch"><div class="label">否（失败或空响应，比如被限流）</div><div class="node">不计缺失，下一轮重试</div></div><div class="branch"><div class="label">是</div><div class="node">没出现的岗位缺失次数 +1</div><div class="arrow">↓</div><div class="node diamond">连续缺失 3 次？</div><div class="arrow">↓</div><div class="split"><div class="branch"><div class="label">是</div><div class="node red small">标记 closed<br>记下 closed_at</div></div><div class="branch"><div class="label">否</div><div class="node small">保持 open</div></div></div></div></div>
+</div></section>
+<div class="section-arrow">↓</div>
+
+<section class="stage"><h2>四、职位初处理与资格提取 <span>仅处理 New / Updated positions</span></h2><div class="flow">
+  <div class="node">读取 New / Updated position</div><div class="arrow">↓</div><div class="node diamond">是否属于目标 Track？</div><div class="arrow">↓</div>
+  <div class="split"><div class="branch"><div class="label">否</div><div class="node red">标记 OTHER<br>不进入候选池</div></div><div class="branch"><div class="label">是</div><div class="node">提取 JD 结构化特征<br><small>技能 · 经验 · seniority · 学历 · 地点</small></div><div class="arrow">↓</div><div class="node">检测 sponsorship、citizenship<br>与 security clearance 限制</div><div class="arrow">↓</div><div class="node">匹配公司与相似职位 LCA 证据</div><div class="arrow">↓</div><div class="node green">保存结构化岗位特征<br>进入推荐候选池</div></div></div>
+</div></section>
+<div class="section-arrow">↓</div>
+
+<div class="row two">
+  <section class="stage"><h2>五、用户画像录入系统</h2><div class="flow">
+    <div class="node">用户注册或更新资料</div><div class="arrow">↓</div><div class="node">录入技能、经验与教育背景</div><div class="arrow">↓</div><div class="node">录入目标 Track 与地点偏好</div><div class="arrow">↓</div><div class="node">录入工作授权与 sponsorship 需求</div><div class="arrow">↓</div><div class="node green">生成可编辑的结构化用户画像</div>
+  </div></section>
+  <section class="stage"><h2>六、个性化候选生成</h2><div class="flow">
+    <div class="node">读取用户画像</div><div class="arrow">↓</div><div class="node">读取 48 小时内 New / Updated positions</div><div class="arrow">↓</div><div class="node">排除 closed、已推荐或已申请岗位</div><div class="arrow">↓</div><div class="node">保留用户选择 Track 的岗位</div><div class="arrow">↓</div><div class="node">执行用户级硬条件过滤</div><div class="arrow">↓</div><div class="node green">输出：该用户的候选岗位集</div>
+  </div></section>
+</div>
+
+<div class="row two">
+  <section class="stage"><h2>七、用户行为提取</h2><div class="flow">
+    <div class="node">接收推荐交付后的用户操作</div><div class="arrow">↓</div><div class="split threeway"><div class="node small">Viewed</div><div class="node small">Saved / Interested</div><div class="node small">Applied</div></div><div class="arrow">↓</div><div class="split"><div class="node small">Dismissed + reason</div><div class="node small">Interview received</div></div><div class="arrow">↓</div><div class="node violet">写入 user_interactions</div>
+    <div class="loop">数据来源：第十步交付后的操作；用于后续批次学习</div>
+  </div></section>
+  <section class="stage"><h2>八、评估和模型更新</h2><div class="flow">
+    <div class="node">读取历史 user_interactions</div><div class="arrow">↓</div><div class="node diamond">反馈数据是否足够？</div><div class="arrow">↓</div><div class="split"><div class="branch"><div class="label">不足</div><div class="node">继续使用当前规则 / 模型</div></div><div class="branch"><div class="label">足够</div><div class="node">训练共享排序模型</div><div class="arrow">↓</div><div class="node">与当前排序离线比较</div><div class="arrow">↓</div><div class="node diamond">新模型更好吗？</div><div class="arrow">↓</div><div class="split"><div class="node green small">是：部署新模型</div><div class="node small">否：保留当前模型</div></div></div></div><div class="arrow">↓</div><div class="node violet">输出：当前生效的排序模型</div>
+  </div></section>
+</div>
+
+<section class="stage"><h2>九、个性化排序</h2>
+  <div class="input-band"><div class="node green">第六步输出<br>用户候选岗位集</div><div class="plus">＋</div><div class="node violet">第八步输出<br>当前生效排序模型</div></div>
+  <div class="flow"><div class="arrow">↓</div><div class="split threeway"><div class="node small">技能 / 经验 / Track 匹配</div><div class="node small">地点 / 新鲜度匹配</div><div class="node small">签证证据与资格匹配</div></div><div class="arrow">↓</div><div class="node">生成个性化综合评分</div><div class="arrow">↓</div><div class="node">重排：同一家公司最多 2 个，去掉高度相似的岗位</div><div class="arrow">↓</div><div class="node green">为每位用户选出 Top 10</div></div>
+</section>
+<div class="section-arrow">↓</div>
+
+<div class="row">
+  <section class="stage"><h2>十、推荐交付</h2><div class="flow">
+    <div class="node">创建 recommendation batch</div><div class="arrow">↓</div><div class="node">保存岗位排名、综合分数与模型版本</div><div class="arrow">↓</div><div class="node">生成岗位卡片与推荐理由</div><div class="arrow">↓</div><div class="split"><div class="node">发送 Daily Email</div><div class="node">网页展示</div></div><div class="arrow">↓</div><div class="node">记录实际曝光与点击入口</div><div class="loop">用户操作回流至第七步 → 形成下一轮反馈闭环</div>
+  </div></section>
+</div>
+
+<div style="border-top:2px dashed var(--border);margin:40px 0 26px;text-align:center"><span style="position:relative;top:-13px;background:#fff;padding:0 16px;color:var(--muted);font-size:15px">以下不属于产品流程</span></div>
+
+<section class="stage" style="max-width:1100px;margin:0 auto"><h2>附：DSCI 551 课程实验 <span>和产品共用同一个 MySQL 数据库</span></h2>
+  <div style="display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap">
+    <div class="node small" style="min-width:0">设计 ER 图和表结构</div><div class="arrow" style="height:auto">→</div>
+    <div class="node small" style="min-width:0">写 5 类真实查询</div><div class="arrow" style="height:auto">→</div>
+    <div class="node small" style="min-width:0">无索引 / 单列 / 复合索引对比</div><div class="arrow" style="height:auto">→</div>
+    <div class="node small" style="min-width:0">EXPLAIN ANALYZE 解释差别</div><div class="arrow" style="height:auto">→</div>
+    <div class="node small" style="min-width:0">Streamlit 展示</div>
+  </div>
+</section>
+
+<div class="legend"><span><i class="dot" style="background:var(--blue)"></i>处理步骤</span><span><i class="dot" style="background:var(--green)"></i>有效输出</span><span><i class="dot" style="background:var(--red)"></i>排除 / 关闭</span><span><i class="dot" style="background:var(--violet)"></i>反馈 / 模型</span></div>
+</main></body></html>

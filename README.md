@@ -1,45 +1,100 @@
-# Job Search Pipeline
+# H-1B-Aware Job Recommender
 
-An automated pipeline for discovering companies with a public hiring-signal track record for a
-target role profile, resolving each employer to its applicant tracking system, and surfacing new
-matching postings daily.
+New-grad Data / ML / AI candidates who need H-1B sponsorship waste most of their search on
+postings from companies that never sponsor, and find good postings days after they open. This
+project recommends freshly posted jobs and attaches visa evidence to each one: how many H-1B
+filings the company has made for that kind of role, from government data.
 
-## What it does
+It is also a DSCI 551 course project, so MySQL is the core: every stage reads from and writes to
+the `job_agg` database.
 
-1. **`build_companies.py`** — Parses public DOL labor market disclosure filings, filters to
-   certified petitions for DS/MLE/AI-type titles, strips staffing agencies, universities, and
-   hospitals, and aggregates by normalized employer name.
-2. **`resolve_slugs.py`** — Probes each candidate employer name against the Greenhouse, Lever,
-   Ashby, SmartRecruiters, and Recruitee APIs to find its real ATS slug.
-3. **`resolve_workday.py`** — Second-pass resolver for Workday-hosted career sites, which require
-   brute-forcing a `tenant | wd-number | site` triple rather than a documented public API.
-4. **`job_feed.py`** — The daily driver. Fetches current openings from every resolved employer,
-   filters by title/seniority/location, and sends borderline postings to an LLM (Groq API) to
-   classify whether a role is genuinely new-grad-eligible. Tracks previously-seen postings so
-   repeat runs only surface what's new.
+## Data sources
 
-## Results
+- **DOL LCA disclosure data** (H-1B Labor Condition Applications), FY2020 Q1 - FY2026 Q3, 25
+  quarterly xlsx files from the U.S. Department of Labor. Some files are cumulative, so records
+  are de-duplicated by `CASE_NUMBER`.
+- **Company applicant tracking systems (ATS)**: public job-board APIs of Greenhouse, Lever,
+  Ashby, SmartRecruiters, Recruitee, Workable and Workday.
 
-- 240K+ government disclosure records processed
-- 1,175 target employers identified
-- 237 of those resolved to a scrapable ATS, covering 41,000+ live postings
-- ~250 roles surfaced after filtering — the daily shortlist
+## Pipeline
 
-## Stack
+```
+LCA xlsx ─► lca/process_lca.py ─► companies, company_role_evidence
+                                          │
+data/companies.csv (ATS slugs) ─► ats_sources
+                                          │
+ATS APIs ─► ingestion/fetch_jobs.py ─► jobs (+ ingestion_runs)   new / updated / closed
+                                          │
+            processing/process_jobs.py ─► job_features           track, seniority, skills, visa flags
+                                          │
+            recommendation/rank_jobs.py ─► recommendations       Top 10 per user
+                                          │
+            app/streamlit_app.py ─► user_interactions            viewed / saved / applied / dismissed
+```
 
-Python, pandas, multithreaded `requests`, Groq API for LLM-based classification.
+See `docs/flowchart_v3.html` for the full diagram and `docs/PLAN.md` for status.
+Stages after `process_lca.py` are being built.
 
 ## Setup
 
-```bash
-pip install requests pandas openpyxl
-export GROQ_API_KEY=...   # free tier at console.groq.com/keys
+1. MySQL 9.x running locally. Create the database and a user, then the tables:
+   ```sql
+   CREATE DATABASE job_agg CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+   CREATE USER 'job_agg_user'@'localhost' IDENTIFIED BY '...';
+   GRANT ALL PRIVILEGES ON job_agg.* TO 'job_agg_user'@'localhost';
+   ```
+   ```bash
+   mysql -h 127.0.0.1 -u job_agg_user -p job_agg < sql/schema.sql
+   ```
+2. `.env` in the project root (never committed):
+   ```
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USER=job_agg_user
+   DB_PASSWORD=...
+   DB_NAME=job_agg
+   ```
+3. Python 3.14: `python3 -m pip install -r requirements.txt`
+4. Put the DOL LCA xlsx files in `data/raw/lca/`.
 
-python3 build_companies.py LCA_Disclosure_Data_FY2025.xlsx
-python3 resolve_slugs.py companies_new.csv
-python3 resolve_workday.py 200
-python3 job_feed.py
+## Running
+
+```bash
+python3 lca/process_lca.py        # LCA -> companies + company_role_evidence (first run ~10 min, then cached)
+python3 mapping/resolve_slugs.py data/companies_new.csv   # find ATS slugs (when the list grows)
+python3 mapping/resolve_workday.py 200                    # second pass for Workday
 ```
 
-Company target lists and scraped job data are excluded from this repo (see `.gitignore`) since
-they reflect one person's specific target list rather than reusable code.
+The next stages (`ingestion/`, `processing/`, `recommendation/`, `app/`) will be added here as
+they are built.
+
+## Current numbers
+
+| | |
+|---|---|
+| LCA records read | 4,269,415 (25 files) |
+| Certified filings in a target Track, after cleaning | 166,351 |
+| Companies with evidence (`companies`) | 22,567 |
+| Company × Track evidence rows | 29,217 |
+| Companies resolved to an ATS (`data/companies.csv`) | 277 |
+
+## DSCI 551 experiments
+
+Queries (`sql/queries.sql`), index experiments (`sql/indexes.sql`) and results
+(`experiments/index_results.md`): _to be added on day 3._
+
+## Known limitations
+
+- One company can appear as several legal entities (Amazon.com Services vs. Amazon Web
+  Services, Meta Platforms vs. Facebook); name normalization does not merge them.
+- Normalized names are rule-based and can look odd (e.g. `JPMORGAN CHASE &`); the UI shows the
+  raw name.
+- Only 277 of the 22,567 companies are resolved to an ATS; large companies with in-house career
+  sites (Google, Meta, Amazon, Apple...) are not covered.
+- Track classification, seniority and visa restrictions use keyword / regex rules, no LLM.
+
+## Legacy
+
+`legacy/` holds the original personal pipeline (`build_companies.py` → `mapping/resolve_*.py` →
+`job_feed.py` → daily `jobs_*.csv`, with Groq-based new-grad classification). It still runs but
+is no longer extended.

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 resolve_slugs.py - resolve company names to their real slug in each applicant tracking system (ATS)
-Usage: python3 resolve_slugs.py companies_new.csv
+Usage: python3 mapping/resolve_slugs.py data/companies_new.csv
+Merges hits into data/companies.csv; names with no hit go to data/unresolved_slugs.txt.
 """
 
 import csv
@@ -10,8 +11,15 @@ import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import requests
+
+# Paths are relative to this file so the script runs from any working directory
+ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
+COMPANIES_CSV = DATA_DIR / "companies.csv"
+UNRESOLVED_TXT = DATA_DIR / "unresolved_slugs.txt"
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 TIMEOUT = 12
@@ -112,8 +120,8 @@ def main():
     # by hand, and the previous overwrite here would wipe it on the next run.
     existing = []
     already = set()
-    if os.path.exists("companies.csv"):
-        with open("companies.csv", encoding="utf-8-sig") as f:
+    if os.path.exists(COMPANIES_CSV):
+        with open(COMPANIES_CSV, encoding="utf-8-sig") as f:
             existing = list(csv.DictReader(f))
         already = {r["company"].strip().lower() for r in existing}
 
@@ -138,19 +146,19 @@ def main():
             if n_done % 25 == 0:
                 print(f"    ...done {n_done}, hits {len(found)}")
 
-    with open("companies.csv", "w", newline="", encoding="utf-8-sig") as f:
+    with open(COMPANIES_CSV, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["company", "ats", "slug", "priority"],
                            extrasaction="ignore")
         w.writeheader()
         w.writerows(existing)
         w.writerows(found)
 
-    with open("unresolved.txt", "w", encoding="utf-8") as f:
+    with open(UNRESOLVED_TXT, "w", encoding="utf-8") as f:
         f.write("\n".join(missing))
 
     print(f"\n{'='*50}")
     print(f"Resolved: {len(found)} new, companies.csv now has {len(existing) + len(found)}")
-    print(f"Not found: {len(missing)}  -> unresolved.txt")
+    print(f"Not found: {len(missing)}  -> {UNRESOLVED_TXT.relative_to(ROOT)}")
     print(f"Open postings at these companies: {sum(r['n_jobs'] for r in found):,}")
     print("=" * 50)
 

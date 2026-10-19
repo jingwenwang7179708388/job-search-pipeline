@@ -4,106 +4,97 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A personal job-hunting pipeline for the owner's own DS/MLE/AI job search in the US, with H-1B
-visa sponsorship as a hard constraint. It is not a general-purpose tool — the filtering logic
-(title keywords, seniority exclusions, visa red-flag phrases, US location hints) is tuned to one
-person's profile and lives as module-level constants at the top of `job_feed.py` and
-`build_companies.py`. When asked to adjust "what jobs show up," edit those constant lists rather
-than the surrounding logic.
+A MySQL-centered job recommender for new-grad Data/ML/AI candidates who need H-1B sponsorship,
+built as a DSCI 551 course project on top of the owner's personal job-search scripts:
 
-## Pipeline (run in this order)
+LCA data → company visa evidence (MySQL) → fetch postings from each company's ATS → job
+lifecycle (new / updated / closed) → regex feature extraction → rule-based scoring against a
+user profile → Top 10 → Streamlit UI + user feedback → 551 SQL and index experiments.
 
-1. **`build_companies.py`** — Input: DOL H-1B LCA disclosure Excel/CSV file(s) (downloaded
-   manually, not stored in repo). Filters to CERTIFIED, non-withdrawn petitions for DS/MLE-type
-   titles, strips staffing/consulting body shops and universities/hospitals, aggregates by
-   normalized employer name. Outputs `sponsors.csv` (full ranked list) and `companies_new.csv`
-   (feed for the next step).
-   ```
-   pip install pandas openpyxl
-   python3 build_companies.py LCA_Disclosure_Data_FY2025.xlsx [more_files.xlsx ...]
-   ```
+The 3-day plan, decisions and step-by-step progress live in `docs/PLAN.md` - read it first and
+update its **Progress** section after finishing each step. Direction comes from
+`docs/Job_Aggregation_Proposal_v3.docx`.
 
-2. **`resolve_slugs.py`** — Takes a companies CSV (e.g. `companies_new.csv`) and brute-force
-   probes candidate name variants against Greenhouse/Lever/Ashby/SmartRecruiters/Recruitee APIs
-   to find each company's real ATS slug. Writes resolved rows to `companies.csv` and unresolved
-   company names to `unresolved.txt`.
-   ```
-   python3 resolve_slugs.py companies_new.csv
-   ```
+## Layout
 
-3. **`resolve_workday.py`** — Second pass for companies that didn't resolve in step 2, since
-   Workday requires guessing a `tenant|wd-number|site-name` triple by brute-force POST rather than
-   a documented public API. Reads `sponsors.csv`, skips companies already in `companies.csv`,
-   writes hits to `companies_workday.csv` (same schema as `companies.csv`, `slug` is
-   pipe-delimited `tenant|wd1/wd3/wd5|site`). Takes how many top-ranked (by sponsor count)
-   unresolved companies to attempt:
-   ```
-   python3 resolve_workday.py 200
-   ```
-   `companies_workday.csv` is a separate output — merge it into `companies.csv` manually if you
-   want `job_feed.py` to pick it up (see Architecture note below).
+```
+common/          db.py (get_conn() from .env), names.py (clean_name, normalize, BODYSHOPS, TITLE_SKIP)
+lca/             process_lca.py - LCA xlsx -> parquet cache -> companies, company_role_evidence
+mapping/         resolve_slugs.py, resolve_workday.py - find each company's ATS slug (still used)
+ingestion/       (planned) ats_clients.py (fetchers copied from legacy/job_feed.py), fetch_jobs.py
+processing/      (planned) process_jobs.py
+recommendation/  (planned) rank_jobs.py
+app/             (planned) streamlit_app.py
+sql/             schema.sql (+ planned queries.sql, indexes.sql)
+experiments/     (planned) index_results.md
+docs/            PLAN.md, proposal, flowchart; docs/archive/ for old proposals
+data/raw/lca/    DOL LCA xlsx files (gitignored)
+data/processed/  lca_parquet/ per-file cache, lca_all.parquet (gitignored)
+data/            companies.csv (277 ATS-resolved companies), companies_new.csv, sponsors.csv,
+                 companies_workday.csv, unresolved_slugs.txt (gitignored)
+legacy/          old CSV pipeline: job_feed.py, build_companies.py, discover_slugs.py,
+                 snapshot_corpus.py, test_wd.py - kept runnable, not extended
+legacy/outputs/  jobs_*.csv, seen_jobs.json, ng_cache.json, unresolved.txt, *.log (gitignored)
+```
 
-4. **`job_feed.py`** — The daily driver. Reads `companies.csv`, fetches current openings from
-   each company's ATS, filters by title/location, flags visa red flags in the job description,
-   scores and ranks, and writes `jobs_YYYY-MM-DD.csv`. Tracks previously-seen job IDs in
-   `seen_jobs.json` so default runs only surface new postings. Every job that passes the
-   title/location filter also gets sent to the Groq API (free tier) for New Grad
-   classification (`classify_new_grad()`) — keyword matching alone isn't reliable for "does this
-   JD actually require years of professional experience," so that judgment call is delegated to
-   an LLM. Requires `GROQ_API_KEY` to be set; the script exits immediately with a clear message
-   if it isn't. Results are cached to `ng_cache.json` keyed by `job_id`, so a job already
-   classified is never re-sent to the LLM on a later run. Failed classifications (reason
-   starts with `classification failed`) are deliberately NOT cached and NOT added to `seen_jobs.json`, so
-   they retry on the next run; `check_groq()` aborts the whole run up front on a bad key (401)
-   or a retired model (404) instead of emitting a CSV full of failures. The LLM gets a
-   `NG_DESC_CHARS` (1500) character excerpt built by `ng_excerpt()` — the JD's opening plus
-   windows around every years/degree/graduation mention — not the first 1500 characters,
-   which are almost always company boilerplate with no requirements in them. The free tier's
-   binding limit is tokens per minute, not requests, hence the low `NG_RATE_LIMIT_RPM`; a
-   full run takes tens of minutes. The candidate's graduation term/degree (`GRAD_TERM`,
-   `GRAD_DEGREE`) and the model used (`GROQ_MODEL`) are constants at the top of the file, same
-   spirit as the other profile constants — edit those, not the classification logic, when the
-   situation changes (e.g. next semester, or switching models if the free tier's rate limits or
-   accuracy become a problem). Pass `--limit N` to cap how many jobs get sent to the LLM in a
-   single run, for cheaply checking classification quality/latency before a full run.
-   ```
-   python3 job_feed.py            # only jobs not seen in a previous run
-   python3 job_feed.py --all      # all currently open matching jobs, ignores/doesn't update seen_jobs.json
-   python3 job_feed.py --companies companies_workday.csv   # run against a different company list
-   ```
+New code imports only from `common/` (and later `ingestion/ats_clients.py`), never from
+`legacy/`. `common/names.py` is a deliberate copy of the rules in `legacy/build_companies.py`.
+Scripts are run from the project root as `python3 <dir>/<script>.py`; each script adds the root
+to `sys.path` itself and builds file paths from `Path(__file__)`, not the working directory.
 
-`test_wd.py` is a scratch script for manually probing a single known Workday tenant when
-debugging `resolve_workday.py` — not part of the pipeline, run ad hoc.
+## Database
 
-## Architecture notes
+- MySQL **9.6.0**, Oracle installer at `/usr/local/mysql`, port **3306**, LaunchDaemon (starts
+  at boot). The owner manages it in MySQL Workbench.
+- DB `job_agg` (utf8mb4), user `job_agg_user`@localhost. Connection info in `.env`
+  (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`), gitignored; read it via
+  `common.db.get_conn()`. Never print or commit the password.
+- `sql/schema.sql` creates 9 tables with `IF NOT EXISTS`. Schema changes: update
+  `schema.sql` *and* apply an `ALTER TABLE` to the live DB.
+- Homebrew `mysql@8.4` is installed but unused and stopped (its `/opt/homebrew/etc/my.cnf`
+  was moved to port 3307). Don't start or uninstall it without asking.
 
-- **ATS fetchers are keyed by name in a dict** (`FETCHERS` in `job_feed.py`, `PROBES` in
-  `resolve_slugs.py`). Adding support for a new ATS means writing a `fetch_<name>` /
-  `try_<name>` function with the same signature and registering it in that dict — the rest of
-  the pipeline is ATS-agnostic downstream of the fetcher.
-- **`job_feed.py` does not natively support Workday.** `companies_workday.csv` uses `ats=workday`
-  but there is no `fetch_workday` in `FETCHERS`, so those rows are currently silently skipped
-  (`FETCHERS[ats] if ats in FETCHERS else []`). Anyone finishing the Workday integration needs to
-  add a fetcher that splits the pipe-delimited `slug` (`tenant|wd_number|site`) and hits
-  `https://{tenant}.{wd_number}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs` — the working
-  POST shape is already proven out in `resolve_workday.py`'s `probe()` and `test_wd.py`.
-- **`TITLE_EXCLUDE` matches whole words** (`_word_hit`), so entries are bare tokens (`"ii"`,
-  `"sr"`, `"intern"`) — don't add padding spaces to fake a boundary. Interns/co-ops are
-  excluded there: the owner wants new-grad full-time roles only.
-- **Company name → slug matching is heuristic**, not authoritative. `clean_name()` /
-  `candidates()` / `tenants()` in the different scripts each reimplement similar (but not
-  identical) legal-suffix-stripping regexes independently — don't assume changing one keeps the
-  others in sync.
-- **State lives in flat CSV/JSON files, not a database**: `sponsors.csv` and `companies*.csv` are
-  durable, hand-curated-ish company lists; `seen_jobs.json` and `jobs_YYYY-MM-DD.csv` are
-  generated/dated outputs from `job_feed.py` runs. `unresolved.txt` is overwritten each run of
-  `resolve_slugs.py` / `job_feed.py`, not appended.
-- Everything in this repo is in English: code, comments, docstrings, console output and the LLM
-  prompt. Do not add Chinese text anywhere when editing.
+## Running
 
-## Dependencies
+```
+python3 -m pip install -r requirements.txt
+python3 lca/process_lca.py                          # first run reads 25 xlsx (~10 min), then cached
+python3 mapping/resolve_slugs.py data/companies_new.csv   # only when the company list grows
+python3 mapping/resolve_workday.py 200
+# planned: ingestion/fetch_jobs.py -> processing/process_jobs.py -> recommendation/rank_jobs.py
+#          -> streamlit run app/streamlit_app.py
+```
 
-No `requirements.txt`. Needed packages: `requests` (all scripts, including calling the Groq API
-in `job_feed.py` — no separate SDK needed), `pandas` + `openpyxl` (`build_companies.py` only, for
-reading the DOL Excel export). `job_feed.py`'s New Grad classification via Groq's free tier also
-needs the `GROQ_API_KEY` env var set, get one free at console.groq.com/keys.
+Legacy pipeline (still runnable): `python3 legacy/build_companies.py data/raw/lca/*.xlsx`,
+then `python3 legacy/job_feed.py` (needs `GROQ_API_KEY`).
+
+## Decisions (see docs/PLAN.md for the full list)
+
+- No Spark - pandas + Parquet. No LLM calls in the 3-day build - keywords and regex only.
+- Tracks: `DATA_ANALYTICS` / `DATA_SCIENCE` / `ML_AI` / `OTHER`, rules in `TRACK_RULES` at the
+  top of `lca/process_lca.py`; "applied scientist" is `ML_AI`. To change what counts, edit the
+  rule lists, not the surrounding logic.
+- The employer universe is MySQL `companies` (every company with evidence);
+  `non_senior_filing_count` is the primary visa evidence for ranking.
+- One company split across legal entities (Amazon/AWS, Meta/Facebook) is a known, accepted
+  limitation for now.
+- Everything in the repo is English: code, comments, SQL comments, logs, docs. Talk to the
+  owner in Chinese.
+
+## Gotchas
+
+- `mysql -u root` connects to the 9.6 **root** account (needs its password), not
+  `job_agg_user`. Use `.env` credentials.
+- Packages are installed with `pip install --user` into Homebrew Python 3.14; `python3 -I`
+  disables user site-packages and then nothing imports. Use `-E -P` if you need isolation -
+  but note `-P` also drops the script's own directory from `sys.path`, which breaks
+  `legacy/snapshot_corpus.py`'s `import job_feed`.
+- Workday rate-limits by returning HTTP 200 with an empty body; treat that as a failed fetch,
+  never as "no postings" (matters for `missing_run_count` in ingestion).
+- DOL quarterly LCA files are inconsistent: most are single-quarter, but some (FY2021 Q2/Q3,
+  FY2023 Q2, FY2026 Q3) are cumulative. Always de-duplicate by `CASE_NUMBER`, keeping the
+  latest quarter.
+- pandas 3: `astype(str)` keeps missing values as NA instead of the string "nan"; call
+  `fillna("")` before string matching.
+- Company name → ATS slug matching is heuristic; `mapping/resolve_slugs.py`,
+  `mapping/resolve_workday.py` and `common/names.py` each have their own legal-suffix regex.

@@ -19,7 +19,12 @@ Output:
 
 import re
 import sys
+from pathlib import Path
+
 import pandas as pd
+
+# Paths are relative to this file so the script runs from any working directory
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # Target titles: a title containing any of these counts as a match
 TITLES = [
@@ -157,7 +162,7 @@ def main():
     g = g[g["sponsor_count"] >= MIN_COUNT].sort_values("sponsor_count", ascending=False)
 
     g[["raw_name", "sponsor_count", "titles", "states"]].to_csv(
-        "sponsors.csv", index=False, encoding="utf-8-sig")
+        DATA_DIR / "sponsors.csv", index=False, encoding="utf-8-sig")
 
     out = pd.DataFrame({
         "company": g["raw_name"],
@@ -165,12 +170,12 @@ def main():
         "slug": g["clean"].str.lower().str.replace(r"[^a-z0-9]", "", regex=True),
         "priority": "",
     })
-    out.to_csv("companies_new.csv", index=False, encoding="utf-8-sig")
+    out.to_csv(DATA_DIR / "companies_new.csv", index=False, encoding="utf-8-sig")
 
     print(f"\n{'='*50}")
     print(f"Target companies: {len(g):,}")
-    print(f"  sponsors.csv       full list (with titles and states)")
-    print(f"  companies_new.csv  input for job_feed.py")
+    print(f"  data/sponsors.csv       full list (with titles and states)")
+    print(f"  data/companies_new.csv  input for mapping/resolve_slugs.py")
     print("=" * 50)
     print("\nTop 25 companies by sponsorship count:\n")
     for _, r in g.head(25).iterrows():

@@ -16,8 +16,14 @@ import re
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 import requests
+
+# Paths are relative to this file so the script runs from any working directory
+ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
+OUT_DIR = ROOT / "legacy" / "outputs"
 
 # ------------------------------------------------ Candidate profile: edit here to change the filtering
 
@@ -107,8 +113,8 @@ def _kw_hit(loc, kw):
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (job-feed personal script)"}
 TIMEOUT = 20
-SEEN_FILE = "seen_jobs.json"
-NG_CACHE_FILE = "ng_cache.json"  # job_id -> {status, reason, evidence}; classified jobs are not re-sent
+SEEN_FILE = OUT_DIR / "seen_jobs.json"
+NG_CACHE_FILE = OUT_DIR / "ng_cache.json"  # job_id -> {status, reason, evidence}; classified jobs are not re-sent
 NG_DESC_CHARS = 1500  # max length of the JD excerpt sent to the LLM, to save tokens (see ng_excerpt)
 NG_HEAD_CHARS = 300  # opening of the JD always kept in the excerpt, for role context
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -569,7 +575,7 @@ NG_ORDER = {"new_grad_friendly": 0, "needs_review": 1, "excluded": 2}
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--all", action="store_true")
-    ap.add_argument("--companies", default="companies.csv")
+    ap.add_argument("--companies", default=str(DATA_DIR / "companies.csv"))
     ap.add_argument("--limit", type=int, default=None,
                      help="max number of matched postings to send to the LLM, to check quality/latency")
     args = ap.parse_args()
@@ -635,7 +641,7 @@ def main():
     results.sort(key=lambda x: (NG_ORDER.get(x["ng_status"], 1), -x["score"], x["company"]))
 
     stamp = datetime.now().strftime("%Y-%m-%d")
-    out_csv = f"jobs_{stamp}.csv"
+    out_csv = OUT_DIR / f"jobs_{stamp}.csv"
     cols = ["score", "ng_status", "priority", "company", "title", "location", "posted",
             "visa_flag", "ng_reason", "ng_evidence", "url"]
     with open(out_csv, "w", newline="", encoding="utf-8-sig") as f:
@@ -650,7 +656,7 @@ def main():
         json.dump(sorted(seen), open(SEEN_FILE, "w"))
 
     if unresolved:
-        with open("unresolved.txt", "w", encoding="utf-8") as f:
+        with open(OUT_DIR / "unresolved.txt", "w", encoding="utf-8") as f:
             f.write("company\tslug\treason\n" + "\n".join(unresolved))
 
     clean = [j for j in results if not j["visa_flag"]]

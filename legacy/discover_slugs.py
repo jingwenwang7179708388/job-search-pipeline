@@ -32,8 +32,15 @@ import re
 import sys
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import requests
+
+# Paths are relative to this file so the script runs from any working directory;
+# the probe functions it reuses now live in mapping/
+ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
+sys.path.insert(0, str(ROOT / "mapping"))
 
 from resolve_slugs import (try_greenhouse, try_lever, try_ashby,
                             try_smartrecruiters, try_recruitee, try_workable)
@@ -207,14 +214,14 @@ def main():
     args = ap.parse_args()
 
     done = set()
-    for path in ("companies.csv", "companies_workday.csv"):
+    for path in (DATA_DIR / "companies.csv", DATA_DIR / "companies_workday.csv"):
         if os.path.exists(path):
             with open(path, encoding="utf-8-sig") as f:
                 done |= {r["company"].strip().lower() for r in csv.DictReader(f)}
 
-    if not os.path.exists("sponsors.csv"):
-        sys.exit("Cannot find sponsors.csv")
-    with open("sponsors.csv", encoding="utf-8-sig") as f:
+    if not os.path.exists(DATA_DIR / "sponsors.csv"):
+        sys.exit("Cannot find data/sponsors.csv")
+    with open(DATA_DIR / "sponsors.csv", encoding="utf-8-sig") as f:
         rows = [{"company": r["raw_name"].strip(), "count": int(r["sponsor_count"])}
                 for r in csv.DictReader(f)
                 if r["raw_name"].strip().lower() not in done]

@@ -1,14 +1,25 @@
+# Python
 __pycache__/
 *.pyc
+
+# OS / editor
 .DS_Store
+.vscode/
+
+# Secrets
+.env
+
+# Data (raw DOL files, caches, generated company lists) - see data/ layout in README
+*.xlsx
+*.parquet
 companies*.csv
 sponsors.csv
+unresolved.txt
+unresolved_slugs.txt
+
+# Legacy pipeline outputs (legacy/outputs/)
 jobs_*.csv
 seen_jobs.json
 ng_cache.json
-unresolved.txt
-*.xlsx
-feed.log
 corpus.db
-.env
-*.parquet
+*.log

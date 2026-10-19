@@ -21,8 +21,13 @@ import sys
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import requests
+
+# Paths are relative to this file so the script runs from any working directory
+ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT / "data"
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                          "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
@@ -121,10 +126,10 @@ def resolve(row):
 def main():
     top_n = int(sys.argv[1]) if len(sys.argv) > 1 else 200
 
-    with open("companies.csv", encoding="utf-8-sig") as f:
+    with open(DATA_DIR / "companies.csv", encoding="utf-8-sig") as f:
         done = {r["company"].strip().lower() for r in csv.DictReader(f)}
 
-    with open("sponsors.csv", encoding="utf-8-sig") as f:
+    with open(DATA_DIR / "sponsors.csv", encoding="utf-8-sig") as f:
         rows = [{"company": r["raw_name"].strip(), "count": int(r["sponsor_count"])}
                 for r in csv.DictReader(f)
                 if r["raw_name"].strip().lower() not in done]
@@ -146,14 +151,14 @@ def main():
             if n_done % 25 == 0:
                 print(f"    ...done {n_done}, hits {len(found)}")
 
-    with open("companies_workday.csv", "w", newline="", encoding="utf-8-sig") as f:
+    with open(DATA_DIR / "companies_workday.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["company", "ats", "slug", "priority"],
                            extrasaction="ignore")
         w.writeheader()
         w.writerows(found)
 
     print(f"\n{'='*52}")
-    print(f"Workday sites found: {len(found)} -> companies_workday.csv")
+    print(f"Workday sites found: {len(found)} -> data/companies_workday.csv")
     print(f"Open postings: {sum(r['n_jobs'] for r in found):,}")
     print(f"\nRequest outcome breakdown (to tell blocking from wrong guesses):")
     for k, v in STATS.most_common(8):
