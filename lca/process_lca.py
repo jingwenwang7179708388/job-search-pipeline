@@ -63,6 +63,10 @@ RESEARCH_TITLES = r"research scientist|research engineer|member of (?:the )?tech
 RESEARCH_ML_SOCS = ("15-1221",   # Computer and Information Research Scientists
                     "15-2051")   # Data Scientists
 
+# Phrases removed from a title before the senior check: their "staff" is not a level word.
+# A level word elsewhere in the title still counts ("Senior Member of Technical Staff").
+NOT_SENIOR_PHRASES = r"member of (?:the )?technical staff"
+
 # Wage unit -> multiplier to annual salary
 WAGE_MULT = {"year": 1, "hour": 2080, "week": 52, "bi-weekly": 26, "month": 12}
 # Annual wages outside this range are treated as data-entry errors and left out of the average
@@ -188,9 +192,12 @@ def main():
     n_clean = len(lca)
 
     # Same substring rule as legacy/build_companies.py: a title containing any TITLE_SKIP
-    # marker is a senior filing and is left out of non_senior_filing_count
+    # marker is a senior filing and is left out of non_senior_filing_count (NOT_SENIOR_PHRASES
+    # are removed first)
     senior_re = "|".join(re.escape(k) for k in TITLE_SKIP)
-    lca["non_senior"] = ~lca["title"].fillna("").str.lower().str.contains(senior_re, regex=True)
+    lca["non_senior"] = ~(lca["title"].fillna("").str.lower()
+                          .str.replace(NOT_SENIOR_PHRASES, "", regex=True)
+                          .str.contains(senior_re, regex=True))
     lca["annual_wage"] = annual_wage(lca)
 
     lca.to_parquet(ALL_PARQUET, index=False)
