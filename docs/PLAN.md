@@ -60,8 +60,8 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
    Tableau, Power BI, Spark, AWS, PyTorch, TensorFlow, Machine Learning); visa evidence level
    Likely (same-Track non-senior filings ≥ 5 and no JD restriction) / Unclear (1-4) /
    Unlikely (no filings in the last 3 years) / Blocked (JD restriction).
-2. Test user: DATA_SCIENCE + ML_AI; Python / SQL / Spark / PyTorch; 1 year; CA / NY /
-   Remote; needs sponsorship.
+2. Test user: DATA_SCIENCE + ML_ENGINEERING + ML_RESEARCH; Python / SQL / Spark / PyTorch;
+   1 year; CA / NY / Remote; needs sponsorship.
 3. `recommendation/rank_jobs.py`: 48-hour window (fall back to 30 days, UI shows "Demo time
    window: 30 days / Production target: 48 hours"); Track 25 / skills 25 / experience 15 /
    location 10 / freshness 10 / visa 15; at most 2 per company; Top 10 into `recommendations`.
