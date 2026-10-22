@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS company_role_evidence (
     company_id      INT UNSIGNED NOT NULL,
     track           ENUM('DATA_ANALYTICS','DATA_SCIENCE','ML_AI') NOT NULL,
     filing_count    INT UNSIGNED NOT NULL,
+    non_senior_filing_count INT UNSIGNED NOT NULL DEFAULT 0, -- filings whose title has no senior marker (common/names.py TITLE_SKIP); primary evidence for ranking
     latest_year     SMALLINT UNSIGNED NOT NULL,         -- fiscal year of the most recent filing
     states          VARCHAR(500),                       -- comma-separated state codes
     average_wage    DECIMAL(12,2),                      -- converted to annual salary (average over this company's filings in this track)

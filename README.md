@@ -63,20 +63,23 @@ Stages after `process_lca.py` are being built.
 python3 lca/process_lca.py        # LCA -> companies + company_role_evidence (first run ~10 min, then cached)
 python3 mapping/resolve_slugs.py data/companies_new.csv   # find ATS slugs (when the list grows)
 python3 mapping/resolve_workday.py 200                    # second pass for Workday
+python3 mapping/load_ats_sources.py      # resolved slugs + mapping/ats_slug_review.csv -> ats_sources
+python3 ingestion/fetch_jobs.py --ats greenhouse lever --per-ats 8   # postings -> jobs, ingestion_runs
 ```
 
-The next stages (`ingestion/`, `processing/`, `recommendation/`, `app/`) will be added here as
-they are built.
+The next stages (`processing/`, `recommendation/`, `app/`) will be added here as they are built.
 
 ## Current numbers
 
 | | |
 |---|---|
 | LCA records read | 4,269,415 (25 files) |
-| Certified filings in a target Track, after cleaning | 166,351 |
-| Companies with evidence (`companies`) | 22,567 |
-| Company × Track evidence rows | 29,217 |
-| Companies resolved to an ATS (`data/companies.csv`) | 277 |
+| Certified filings in a target Track, after cleaning | 171,759 |
+| Companies with evidence (`companies`) | 22,811 |
+| Company × Track evidence rows | 29,517 |
+| Guessed ATS slugs (`data/companies.csv`) | 277, of which 23 (8.3%) point to another company |
+| `ats_sources` rows | 253 (243 active) |
+| Jobs ingested so far | 2,528 from 16 Greenhouse/Lever sources |
 
 ## DSCI 551 experiments
 

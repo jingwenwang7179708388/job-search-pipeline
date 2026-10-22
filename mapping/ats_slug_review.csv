@@ -1,0 +1,45 @@
+ats,slug,company,decision,reason,reviewed_on
+greenhouse,apex,"APEX Analytix, LLC",reject,board belongs to Apex Eye,2026-10-19
+greenhouse,apex,Apex Fintech Services LLC,reject,board belongs to Apex Eye,2026-10-19
+greenhouse,apex,Apex-2000 Inc,reject,board belongs to Apex Eye,2026-10-19
+greenhouse,general,General Electric Company,reject,board belongs to General Interest,2026-10-19
+greenhouse,general,General Motors,reject,board belongs to General Interest,2026-10-19
+greenhouse,gateway,Gateway Scripts LLC,reject,board belongs to Gateway Aesthetic Institute & Laser Center,2026-10-19
+ashby,applied,Applied Academics LLC,reject,board belongs to Applied Intuition (kept under that company),2026-10-19
+greenhouse,sas,SAS Institute Inc.,reject,board belongs to Superior Alarm Systems,2026-10-19
+greenhouse,rga,RGA Enterprise Services Company ,reject,"board belongs to R/GA (agency), not RGA (reinsurance)",2026-10-19
+greenhouse,disney,DISNEY STREAMING SERVICES LLC,reject,"board name is ""Sgt. Pepper's Lonely Hearts Club Band"", not Disney",2026-10-19
+greenhouse,abc,ABC Supply Co. Inc.,reject,board belongs to ThoughtWorks,2026-10-19
+greenhouse,ihc,"IHC Health Services, Inc.",reject,board belongs to Integrity Home Care & Hospice,2026-10-19
+greenhouse,gps,GPS IT Solutions LLC,reject,board belongs to Thredd,2026-10-19
+greenhouse,technology,Technology Hub Inc,reject,board belongs to Relai,2026-10-19
+recruitee,radix,"Radix Trading, LLC",reject,board belongs to Superlinear,2026-10-19
+recruitee,arcus,Arcus Technologies,reject,offers' company_name is ARCUS Planung + Beratung (German construction planning),2026-10-19
+recruitee,automation,AUTOMATION TECHNOLOGIES LLC,reject,offers' company_name is Automation NV (Belgium),2026-10-19
+ashby,prometheus,Prometheus Computing LLC,reject,only posting is a shop engineering technician; not a software company,2026-10-19
+ashby,simply,Simply Robots Inc.,reject,postings are for Simply Piano / Simply Draw (JoyTunes),2026-10-19
+ashby,gradient,"Gradient Capital Group, Inc.",reject,postings are for GradientHR,2026-10-19
+lever,voltai,Voltai Inc.,reject,"postings are for VOLT (AI security platform), not Voltai",2026-10-19
+greenhouse,wayve,"Wayve Technologies, Inc",inactive,board returns 404,2026-10-19
+greenhouse,linkedin,LINKEDIN CORPORATION,inactive,board returns 404,2026-10-19
+greenhouse,victory,Victory Capital Management Inc.,inactive,board returns 404,2026-10-19
+lever,ledger,"Ledger Run, Inc.",inactive,board returns 404,2026-10-19
+ashby,foursquare,"Foursquare Labs, Inc.",inactive,board has no postings; ownership could not be verified,2026-10-19
+ashby,ocean,"Ocean AI, LLC",inactive,board has no postings; ownership could not be verified,2026-10-19
+ashby,roots-automation,"Roots Automation, Inc",inactive,board has no postings; ownership could not be verified,2026-10-19
+ashby,real,REAL SOFT INC,inactive,board has no postings; ownership could not be verified,2026-10-19
+smartrecruiters,intuitive,"Intuitive Surgical Operations, Inc.",duplicate,"same company as Intuitive Surgical, Inc., which keeps this slug",2026-10-19
+greenhouse,botauto,BOT AUTO CA INC,duplicate,"same company as BOT AUTO TX INC, which keeps this slug",2026-10-19
+greenhouse,purestorage,"PURE STORAGE, INC.",verified,board name Everpure; 20/20 sampled JDs mention Everpure (Pure Storage rebrand),2026-10-19
+greenhouse,ninjatrader,Ninja Trader LLC,verified,board name NinjaTrader,2026-10-19
+ashby,character,Character Technologies Inc.,verified,board name Character.AI,2026-10-19
+lever,adeptid,"Adept ID, Inc.",verified,board name AdeptID,2026-10-19
+ashby,mercor,Mercor.io Corporation,verified,board name Mercor,2026-10-19
+recruitee,aikidosecurity,Aikido Security Corp.,verified,offers' company_name is Aikido Security,2026-10-19
+workday,cisco|wd5|cisco_careers,"Cisco Systems, Inc.",verified,"random Workday spot check: hiringOrganization = 020 Cisco Systems, Inc.",2026-10-19
+workday,remitly|wd5|remitly_careers,"Remitly, Inc.",verified,random Workday spot check: hiringOrganization = Remitly PHL Operations Inc.,2026-10-19
+workday,dataminr|wd12|dataminr,"Dataminr, Inc.",verified,"random Workday spot check: hiringOrganization = Dataminr, Inc.",2026-10-19
+workday,pjm|wd5|pjmcareers,"PJM Interconnection, LLC.",verified,"random Workday spot check: hiringOrganization = PJM Interconnection, L.L.C.",2026-10-19
+workday,nvidia|wd5|NVIDIAExternalCareerSite,NVIDIA Corporation,verified,random Workday spot check: hiringOrganization = 2100 NVIDIA USA,2026-10-19
+greenhouse,insurance,"Insurance Services Office, Inc",reject,board belongs to Alpha FMC (Insurance Consulting); found after the first ingestion run,2026-10-19
+recruitee,sri,SRI International,reject,"offers' company_name is SRI Rechtsanwaltsgesellschaft mbH (German law firm), not SRI International",2026-10-19

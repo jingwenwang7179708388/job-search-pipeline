@@ -5,7 +5,7 @@ from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")  # .env lives in the project root
 
 
 def get_conn():

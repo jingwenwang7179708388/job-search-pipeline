@@ -20,8 +20,10 @@ update its **Progress** section after finishing each step. Direction comes from
 ```
 common/          db.py (get_conn() from .env), names.py (clean_name, normalize, BODYSHOPS, TITLE_SKIP)
 lca/             process_lca.py - LCA xlsx -> parquet cache -> companies, company_role_evidence
-mapping/         resolve_slugs.py, resolve_workday.py - find each company's ATS slug (still used)
-ingestion/       (planned) ats_clients.py (fetchers copied from legacy/job_feed.py), fetch_jobs.py
+mapping/         resolve_slugs.py, resolve_workday.py - find each company's ATS slug (still used);
+                 ats_slug_review.csv (hand-checked slugs) + load_ats_sources.py -> ats_sources
+ingestion/       ats_clients.py (fetchers copied from legacy/job_feed.py), fetch_jobs.py -> jobs,
+                 ingestion_runs (lifecycle rules in its docstring)
 processing/      (planned) process_jobs.py
 recommendation/  (planned) rank_jobs.py
 app/             (planned) streamlit_app.py
@@ -61,7 +63,9 @@ python3 -m pip install -r requirements.txt
 python3 lca/process_lca.py                          # first run reads 25 xlsx (~10 min), then cached
 python3 mapping/resolve_slugs.py data/companies_new.csv   # only when the company list grows
 python3 mapping/resolve_workday.py 200
-# planned: ingestion/fetch_jobs.py -> processing/process_jobs.py -> recommendation/rank_jobs.py
+python3 mapping/load_ats_sources.py                 # data/companies.csv + review -> ats_sources
+python3 ingestion/fetch_jobs.py --ats greenhouse lever --per-ats 8   # or --source-ids / --all-active
+# planned: processing/process_jobs.py -> recommendation/rank_jobs.py
 #          -> streamlit run app/streamlit_app.py
 ```
 
@@ -71,9 +75,20 @@ then `python3 legacy/job_feed.py` (needs `GROQ_API_KEY`).
 ## Decisions (see docs/PLAN.md for the full list)
 
 - No Spark - pandas + Parquet. No LLM calls in the 3-day build - keywords and regex only.
-- Tracks: `DATA_ANALYTICS` / `DATA_SCIENCE` / `ML_AI` / `OTHER`, rules in `TRACK_RULES` at the
-  top of `lca/process_lca.py`; "applied scientist" is `ML_AI`. To change what counts, edit the
-  rule lists, not the surrounding logic.
+- Tracks are defined in `docs/TRACKS.md` (10 Tracks + `OTHER`); that file is the source of
+  truth. The rules are the frozen v5 (`experiments/track_rules_v5.py`), copied into
+  `common/tracks.py` (`classify_title(title, soc_code=None)`, no pandas);
+  `experiments/check_common_tracks.py` checks the copy is identical. Blind-label precision on
+  the same sample: v4 71% -> v5 85%. Change rules by making a new experiment version, not by
+  editing v4/v5 in place.
+- Not switched yet: `lca/process_lca.py` (`TRACK_RULES` / `RESEARCH_TITLES`),
+  `sql/schema.sql` (`track` ENUM) and `ingestion/fetch_jobs.py` (`--per-ats` ranking) still
+  use the old 3-Track values `DATA_ANALYTICS` / `DATA_SCIENCE` / `ML_AI`. They will be
+  switched to `common/tracks.py` next.
+- ATS slugs guessed by `mapping/resolve_*.py` are wrong ~8% of the time (generic names like
+  apex/general/insurance hit other companies' boards). Check each new slug against the
+  board's own company name and record the outcome in `mapping/ats_slug_review.csv`; matching
+  a single word of the name is not enough.
 - The employer universe is MySQL `companies` (every company with evidence);
   `non_senior_filing_count` is the primary visa evidence for ranking.
 - One company split across legal entities (Amazon/AWS, Meta/Facebook) is a known, accepted
