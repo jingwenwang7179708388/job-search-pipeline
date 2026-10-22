@@ -143,8 +143,8 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
   v4 frozen before blind labeling (`1d421e7`); v5 adds QA/test analysts -> SWE, operations
   research -> DATA_SCIENCE, analytics with no core word -> DATA_ANALYTICS, consultant with no
   core word -> OTHER (`ff07fa0`). Blind-label precision on the same sample: v4 71% -> v5 85%.
-  Scored outside the repo; labels and scoring script to be added to experiments/ so the
-  numbers are reproducible.
+  Labels (`experiments/track_labels_v4_hand.csv`) and scoring script
+  (`experiments/score_track_labels.py`) are now in experiments/; rerun it to reproduce.
   v5 on 2,716,527 cleaned Certified filings: OTHER 48.7%, SOFTWARE_ENGINEERING 37.5%, the
   other 9 Tracks 13.8%. `common/tracks.py` is a copy of v5 for both LCA titles and ATS
   postings (`classify_title(title, soc_code=None)`); `experiments/check_common_tracks.py`:
