@@ -142,7 +142,8 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
   (17-/19-/25-/29- -> OTHER) or tie-break, level words recorded but never change the Track.
   v4 frozen before blind labeling (`1d421e7`); v5 adds QA/test analysts -> SWE, operations
   research -> DATA_SCIENCE, analytics with no core word -> DATA_ANALYTICS, consultant with no
-  core word -> OTHER (`ff07fa0`). Blind-label precision on the same sample: v4 71% -> v5 85%.
+  core word -> OTHER (`ff07fa0`). Blind-label precision on the same sample: v4 71% -> v5 85%
+  (v5 was fixed after seeing these errors, so 85% on the same sample is optimistic).
   Labels (`experiments/track_labels_v4_hand.csv`) and scoring script
   (`experiments/score_track_labels.py`) are now in experiments/; rerun it to reproduce.
   v5 on 2,716,527 cleaned Certified filings: OTHER 48.7%, SOFTWARE_ENGINEERING 37.5%, the
