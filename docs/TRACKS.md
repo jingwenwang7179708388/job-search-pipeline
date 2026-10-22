@@ -13,9 +13,9 @@ The rules approximate these definitions. When a rule and this file disagree, thi
 2. **Track = the core work, not the seniority.** Level (Intern, Senior, Staff, Manager, Director, ...) is stored separately and never changes the Track. "Director of Data Science" is DATA_SCIENCE + level director.
 3. **Decide by the decision question.** Each Track has one question about the main output of the job. When two Tracks seem to fit, the question decides.
 4. **The core word limits the options.** The title's head noun narrows which Tracks are possible:
-   - Analyst -> DATA_ANALYTICS, BUSINESS_ANALYTICS, SYSTEMS_ANALYSIS, FINANCIAL_ANALYTICS, QUANT, OTHER
+   - Analyst -> DATA_ANALYTICS, BUSINESS_ANALYTICS, SYSTEMS_ANALYSIS, FINANCIAL_ANALYTICS, QUANT, DATA_SCIENCE (operations research only), SOFTWARE_ENGINEERING (QA / test and programmer analysts only), OTHER
    - Scientist -> DATA_SCIENCE, ML_RESEARCH, QUANT, OTHER
-   - Engineer / Developer -> DATA_ANALYTICS (BI only), DATA_ENGINEERING, ML_ENGINEERING, ML_RESEARCH, SOFTWARE_ENGINEERING, QUANT, OTHER
+   - Engineer / Developer -> DATA_ANALYTICS (BI only), DATA_SCIENCE (operations research only), DATA_ENGINEERING, ML_ENGINEERING, ML_RESEARCH, SOFTWARE_ENGINEERING, QUANT, OTHER
 5. **SOC codes only break ties or veto.** Only LCA filings have a SOC code; ATS postings do not. SOC is used when the title is vague, and SOC 17-, 19-, 25-, 29- (traditional engineering, life/physical science, education, healthcare) always means OTHER.
 6. **Classification is separate from scope.** All Tracks below are classified. Which Tracks users can select and which companies we monitor is a product decision made elsewhere.
 7. **When unsure, say so.** Labelers use `UNSURE`; it is counted separately, not forced into a Track.
@@ -41,7 +41,7 @@ The rules approximate these definitions. When a rule and this file disagree, thi
 ### DATA_ANALYTICS
 - **Definition:** Pulls, cleans and summarizes data; builds reports and dashboards.
 - **Question:** Is the main output data, reports or dashboards?
-- **Includes:** Data Analyst, BI Analyst, Reporting Analyst, BI Engineer, BI Developer (Tableau / Power BI / Looker), Business Data Analyst, Statistical Programmer.
+- **Includes:** Data Analyst, BI Analyst, Reporting Analyst, BI Engineer, BI Developer (Tableau / Power BI / Looker), Business Data Analyst, Statistical Programmer, titles with no core word that mention analytics but not data science / machine learning / AI / consultant (e.g. Analytics Manager, Head of Analytics).
 - **Excludes:** Data Engineer (-> DATA_ENGINEERING), Analytics Engineer (-> DATA_ENGINEERING), Financial Data Analyst (-> FINANCIAL_ANALYTICS), Data Scientist (-> DATA_SCIENCE).
 - **SOC hints:** 15-2051.01 (BI analysts, 2018), 15-1199.08 (BI analysts, 2010).
 
@@ -76,7 +76,7 @@ The rules approximate these definitions. When a rule and this file disagree, thi
 ### DATA_SCIENCE
 - **Definition:** Builds statistical models, runs experiments, makes forecasts.
 - **Question:** Is the main output a statistical model, an experiment or a forecast?
-- **Includes:** Data Scientist (incl. Product / Risk / ML-flavored Data Scientist), Decision Scientist, Statistician, Operations Research Analyst / Scientist.
+- **Includes:** Data Scientist (incl. Product / Risk / ML-flavored Data Scientist), Decision Scientist, Statistician, any title with "operations research" / "operation research" (Analyst, Scientist, Engineer, Manager, ...).
 - **Excludes:** Applied Scientist, Research Scientist (-> ML_RESEARCH), Data Analyst (-> DATA_ANALYTICS), ML Engineer (-> ML_ENGINEERING).
 - **SOC hints:** 15-2051.00 (data scientists), 15-2041 (statisticians).
 
@@ -104,7 +104,7 @@ The rules approximate these definitions. When a rule and this file disagree, thi
 ### SOFTWARE_ENGINEERING
 - **Definition:** Writes, tests and operates software for a product or service.
 - **Question:** Is the main output software code?
-- **Includes:** Software Engineer, Software Developer, SDE, Backend / Frontend / Full Stack / Mobile Engineer, Java / .NET Developer, Programmer Analyst, Computer Programmer / Programmer, DevOps / SRE, QA / Test Automation Engineer, Member of Technical Staff with SOC 15-125x.
+- **Includes:** Software Engineer, Software Developer, SDE, Backend / Frontend / Full Stack / Mobile Engineer, Java / .NET Developer, Programmer Analyst, Computer Programmer / Programmer, DevOps / SRE, QA / Test Automation Engineer, QA / Test Analyst (qa, quality assurance, software quality, test, testing, tester; not A/B testing or experimentation analysts), Quality / Assurance Analyst with SOC 15-1253 or 15-1199.01, Member of Technical Staff with SOC 15-125x.
 - **Excludes:** Network Engineer, Security Engineer, Systems Engineer (IT infrastructure -> OTHER), Solutions Architect (-> OTHER), hardware engineers (-> OTHER).
 - **SOC hints:** 15-1252, 15-1253, 15-1251 (2018); 15-1131, 15-1132, 15-1133 (2010).
 
@@ -113,9 +113,10 @@ Everything else, for example: Product / Project / Program Manager, Consultant, S
 
 ## Precedence when a title has several signals
 
-- **Analyst** (first match wins): IT-system name -> SYSTEMS_ANALYSIS; quant/quantitative + finance context -> QUANT; financial / finance / credit / risk / investment / accounting -> FINANCIAL_ANALYTICS; data / BI / reporting -> DATA_ANALYTICS; growth / marketing / product / customer / operations / strategy -> BUSINESS_ANALYTICS; business systems / systems -> SYSTEMS_ANALYSIS; plain "business analyst" -> by SOC (analytical SOC -> BUSINESS_ANALYTICS, computer-occupation SOC (15-1211, 15-1121, 15-1199.x except 15-1199.08, 15-125x, 15-113x) -> SYSTEMS_ANALYSIS, otherwise OTHER); plain "analyst" with no direction word -> by SOC (BI SOC -> DATA_ANALYTICS, other analytical SOC -> BUSINESS_ANALYTICS, then computer-occupation SOC -> SYSTEMS_ANALYSIS, financial SOC -> FINANCIAL_ANALYTICS, 13-2099.01 -> QUANT, otherwise OTHER). Finance words beat data words, and data words beat business words, because finance is a separate career direction and "business" is not.
+- **Analyst** (first match wins): operations research -> DATA_SCIENCE; QA / quality assurance / software quality / test / testing / tester (except A/B testing or experiment), or quality / assurance with SOC 15-1253 or 15-1199.01 -> SOFTWARE_ENGINEERING; IT-system name -> SYSTEMS_ANALYSIS; quant/quantitative + finance context -> QUANT; financial / finance / credit / risk / investment / accounting -> FINANCIAL_ANALYTICS; data / BI / reporting -> DATA_ANALYTICS; growth / marketing / product / customer / operations / strategy -> BUSINESS_ANALYTICS; business systems / systems -> SYSTEMS_ANALYSIS; plain "business analyst" -> by SOC (analytical SOC -> BUSINESS_ANALYTICS, computer-occupation SOC (15-1211, 15-1121, 15-1199.x except 15-1199.08, 15-125x, 15-113x) -> SYSTEMS_ANALYSIS, otherwise OTHER); plain "analyst" with no direction word -> by SOC (BI SOC -> DATA_ANALYTICS, other analytical SOC -> BUSINESS_ANALYTICS, then computer-occupation SOC -> SYSTEMS_ANALYSIS, financial SOC -> FINANCIAL_ANALYTICS, 13-2099.01 -> QUANT, otherwise OTHER). Finance words beat data words, and data words beat business words, because finance is a separate career direction and "business" is not.
 - **Scientist:** quant -> QUANT; data / decision / product / operations research -> DATA_SCIENCE; research / applied / ML / AI -> ML_RESEARCH.
-- **Engineer / Developer / SDE:** quant -> QUANT; BI -> DATA_ANALYTICS; research -> ML_RESEARCH; ML / AI / CV / NLP / LLM -> ML_ENGINEERING; data / analytics / ETL -> DATA_ENGINEERING; software / backend / frontend / full stack / mobile / devops / QA -> SOFTWARE_ENGINEERING.
+- **Engineer / Developer / SDE:** quant -> QUANT; BI -> DATA_ANALYTICS; operations research -> DATA_SCIENCE; research -> ML_RESEARCH; ML / AI / CV / NLP / LLM -> ML_ENGINEERING; data / analytics / ETL -> DATA_ENGINEERING; software / backend / frontend / full stack / mobile / devops / QA -> SOFTWARE_ENGINEERING.
+- **No core word:** operations research -> DATA_SCIENCE; consultant -> OTHER regardless of SOC (title families such as data science still win); analytics without data science / machine learning / AI / consultant -> DATA_ANALYTICS (SOC does not override this, e.g. 15-2041 does not make it DATA_SCIENCE).
 
 ## Settled edge cases
 
@@ -130,6 +131,9 @@ Everything else, for example: Product / Project / Program Manager, Consultant, S
 | Financial Data Analyst | FINANCIAL_ANALYTICS | domain (finance) beats function for Analyst |
 | Quant Developer | QUANT | quant work in finance |
 | Operations Research Analyst | DATA_SCIENCE | optimization and modeling |
+| Operations Research Engineer | DATA_SCIENCE | operations research beats research |
+| QA Analyst / Test Analyst | SOFTWARE_ENGINEERING | output is tested software |
+| Analytics Manager | DATA_ANALYTICS (+ level manager) | analytics without data science / ML / AI |
 | Data Scientist, Machine Learning | DATA_SCIENCE | head noun Scientist + data |
 | Software Engineer, Machine Learning | ML_ENGINEERING | ML beats software |
 | Machine Learning Research Engineer | ML_RESEARCH | research beats ML for Engineer |
