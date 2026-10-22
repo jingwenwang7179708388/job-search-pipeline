@@ -74,12 +74,13 @@ The next stages (`processing/`, `recommendation/`, `app/`) will be added here as
 | | |
 |---|---|
 | LCA records read | 4,269,415 (25 files) |
-| Certified filings in a target Track, after cleaning | 171,759 |
-| Companies with evidence (`companies`) | 22,811 |
-| Company × Track evidence rows | 29,517 |
+| Certified filings after cleaning (de-dup, Certified, no staffing/university/hospital) | 2,716,527 |
+| ... in one of the 10 Tracks (not OTHER) | 1,392,266 (SOFTWARE_ENGINEERING 1,017,907) |
+| Companies with evidence | 61,697 (`companies` table: 62,480 rows) |
+| Company × Track evidence rows | 109,168 |
 | Guessed ATS slugs (`data/companies.csv`) | 277, of which 23 (8.3%) point to another company |
-| `ats_sources` rows | 253 (243 active) |
-| Jobs ingested so far | 2,528 from 16 Greenhouse/Lever sources |
+| `ats_sources` rows | 251 (243 active) |
+| Jobs ingested so far | 2,518 from 15 Greenhouse/Lever sources |
 
 ## DSCI 551 experiments
 

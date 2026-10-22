@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS companies (
 CREATE TABLE IF NOT EXISTS company_role_evidence (
     evidence_id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id      INT UNSIGNED NOT NULL,
-    track           ENUM('DATA_ANALYTICS','DATA_SCIENCE','ML_AI') NOT NULL,
+    -- Track values = common/tracks.py TRACKS (defined in docs/TRACKS.md); OTHER is never written here
+    track           ENUM('DATA_ANALYTICS','BUSINESS_ANALYTICS','SYSTEMS_ANALYSIS','FINANCIAL_ANALYTICS','QUANT',
+                    'DATA_SCIENCE','DATA_ENGINEERING','ML_ENGINEERING','ML_RESEARCH',
+                    'SOFTWARE_ENGINEERING','OTHER') NOT NULL,
     filing_count    INT UNSIGNED NOT NULL,
     non_senior_filing_count INT UNSIGNED NOT NULL DEFAULT 0, -- filings whose title has no senior marker (common/names.py TITLE_SKIP); primary evidence for ranking
     latest_year     SMALLINT UNSIGNED NOT NULL,         -- fiscal year of the most recent filing
@@ -78,7 +81,9 @@ CREATE TABLE IF NOT EXISTS jobs (
 -- 6. Job features (written by processing/process_jobs.py): structured fields extracted from the JD - track, seniority, years of experience, skills, visa restrictions
 CREATE TABLE IF NOT EXISTS job_features (
     job_id               BIGINT UNSIGNED PRIMARY KEY,
-    role_family          ENUM('DATA_ANALYTICS','DATA_SCIENCE','ML_AI','OTHER') NOT NULL,
+    role_family          ENUM('DATA_ANALYTICS','BUSINESS_ANALYTICS','SYSTEMS_ANALYSIS','FINANCIAL_ANALYTICS','QUANT',
+                         'DATA_SCIENCE','DATA_ENGINEERING','ML_ENGINEERING','ML_RESEARCH',
+                         'SOFTWARE_ENGINEERING','OTHER') NOT NULL, -- common/tracks.py TRACKS
     seniority            ENUM('intern','entry','mid','senior','unknown') NOT NULL DEFAULT 'unknown',
     min_years_experience TINYINT UNSIGNED,              -- NULL when not found
     requires_citizenship BOOLEAN NOT NULL DEFAULT FALSE,
@@ -95,7 +100,7 @@ CREATE TABLE IF NOT EXISTS job_features (
 CREATE TABLE IF NOT EXISTS users (
     user_id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name                VARCHAR(100) NOT NULL,
-    target_tracks       JSON NOT NULL,                  -- e.g. ["DATA_SCIENCE","ML_AI"]
+    target_tracks       JSON NOT NULL,                  -- e.g. ["DATA_SCIENCE","ML_ENGINEERING"] (common/tracks.py TRACKS)
     skills              JSON NOT NULL,
     years_experience    TINYINT UNSIGNED NOT NULL DEFAULT 0,
     preferred_locations JSON NOT NULL,                  -- e.g. ["CA","NY","Remote"]

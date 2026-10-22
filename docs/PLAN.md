@@ -24,9 +24,9 @@ The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*
   `company_role_evidence.non_senior_filing_count` is the primary evidence for ranking.
   `sponsors.csv` and `build_companies.py` are legacy.
 - Tracks: defined in `docs/TRACKS.md` (10 Tracks + `OTHER`); rules are the frozen v5 in
-  `common/tracks.py` (keyword and regex rules, SOC code only as veto / tie-break).
-  `lca/process_lca.py`, `sql/schema.sql` and `ingestion/fetch_jobs.py` still use the old
-  3-Track values (`DATA_ANALYTICS` / `DATA_SCIENCE` / `ML_AI`) and are switched next.
+  `common/tracks.py` (keyword and regex rules, SOC code only as veto / tie-break), used by
+  `lca/process_lca.py`; `sql/schema.sql` ENUMs and `ingestion/fetch_jobs.py` use the same
+  11 values.
 - One company split across legal entities (Amazon/AWS, Meta/Facebook): not handled in these
   3 days; listed as a known limitation.
 - No LLM calls in these 3 days: keywords and regex only.
@@ -152,3 +152,15 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
   0 Track / 0 rule-path mismatches over 660,771 (title, SOC) pairs, 0 None-vs-"" mismatches
   over 471,250 titles (`3e04855`). Next: switch `lca/process_lca.py`, the `track` ENUM in
   `sql/schema.sql` and `ingestion/fetch_jobs.py` from the old 3 Tracks to `common/tracks.py`.
+- **2026-10-22 - LCA evidence and schema switched to the 11 Tracks.** Backed up
+  `company_role_evidence` (29,517 rows), emptied it, changed the `track` and
+  `job_features.role_family` ENUMs to the 11 `TRACKS` values (ALTER on the live DB +
+  `sql/schema.sql`), reran `lca/process_lca.py` (36 s from the parquet cache), then dropped
+  the backup. `process_lca.py` now classifies after de-dup / Certified / BODYSHOPS with
+  `common.tracks.classify_title`, so its population matches v5: 2,716,527 cleaned filings,
+  1,392,266 in a Track (SOFTWARE_ENGINEERING 1,017,907). Companies with evidence 22,811 ->
+  61,697; `companies` 22,811 -> 62,480 rows (783 old companies now have no evidence, kept;
+  2 of them have ATS sources); `company_role_evidence` 29,517 -> 109,168 rows. Companies per
+  Track: SWE 38,417, DA 14,445, BA 11,105, SYS 10,758, DE 10,016, DS 9,213, FIN 7,841,
+  MLE 3,868, MLR 1,832, QUANT 1,673. Also: "member of technical staff" no longer counts as
+  senior; `fetch_jobs.py --per-ats` ranks by DS + ML_ENGINEERING + ML_RESEARCH (`--tracks`).

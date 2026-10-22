@@ -17,7 +17,8 @@ Per source, one ingestion_runs row, and these rules:
 
 Usage (from the project root):
   python3 ingestion/fetch_jobs.py --ats greenhouse lever --per-ats 8
-      top 8 active sources per ATS, ranked by the company's non-senior DS + ML_AI filings
+      top 8 active sources per ATS, ranked by the company's non-senior filings in RANK_TRACKS
+      (override with --tracks DATA_ANALYTICS DATA_SCIENCE ...)
   python3 ingestion/fetch_jobs.py --source-ids 12 40 77
   python3 ingestion/fetch_jobs.py --all-active
 """
@@ -32,9 +33,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from common.db import get_conn                       # noqa: E402
+from common.tracks import TRACKS                     # noqa: E402
 from ingestion.ats_clients import FETCHERS           # noqa: E402
 
 MISSING_TO_CLOSE = 3
+# Default Tracks whose non-senior LCA filings rank sources for --per-ats (closest to the old
+# DATA_SCIENCE + ML_AI ordering)
+RANK_TRACKS = ["DATA_SCIENCE", "ML_ENGINEERING", "ML_RESEARCH"]
 
 _MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
 _DATE_PATTERNS = [
@@ -74,10 +79,10 @@ def pick_sources(cur, args):
     for ats in args.ats:
         cur.execute(
             base + "LEFT JOIN company_role_evidence e ON e.company_id = s.company_id "
-            "AND e.track IN ('DATA_SCIENCE', 'ML_AI') "
+            "AND e.track IN (" + ",".join(["%s"] * len(args.tracks)) + ") "
             "WHERE s.is_active AND s.ats_type = %s "
             "GROUP BY s.ats_source_id ORDER BY COALESCE(SUM(e.non_senior_filing_count), 0) DESC, "
-            "s.ats_source_id LIMIT %s", (ats, args.per_ats))
+            "s.ats_source_id LIMIT %s", (*args.tracks, ats, args.per_ats))
         out.extend(cur.fetchall())
     return out
 
@@ -178,6 +183,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--ats", nargs="+", default=["greenhouse", "lever"])
     ap.add_argument("--per-ats", type=int, default=8)
+    ap.add_argument("--tracks", nargs="+", default=RANK_TRACKS,
+                    choices=[t for t in TRACKS if t != "OTHER"])
     ap.add_argument("--source-ids", nargs="+", type=int)
     ap.add_argument("--all-active", action="store_true")
     args = ap.parse_args()

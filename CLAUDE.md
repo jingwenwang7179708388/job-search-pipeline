@@ -81,10 +81,16 @@ then `python3 legacy/job_feed.py` (needs `GROQ_API_KEY`).
   `experiments/check_common_tracks.py` checks the copy is identical. Blind-label precision on
   the same sample: v4 71% -> v5 85%. Change rules by making a new experiment version, not by
   editing v4/v5 in place.
-- Not switched yet: `lca/process_lca.py` (`TRACK_RULES` / `RESEARCH_TITLES`),
-  `sql/schema.sql` (`track` ENUM) and `ingestion/fetch_jobs.py` (`--per-ats` ranking) still
-  use the old 3-Track values `DATA_ANALYTICS` / `DATA_SCIENCE` / `ML_AI`. They will be
-  switched to `common/tracks.py` next.
+- `lca/process_lca.py` classifies every cleaned filing with `common.tracks.classify_title`
+  (title + SOC) and writes all 10 Tracks (incl. SOFTWARE_ENGINEERING) to
+  `company_role_evidence`; OTHER is never written. Seniority (`TITLE_SKIP`, with "member of
+  technical staff" not counted as senior) is separate from the Track. The `track` /
+  `role_family` ENUMs in `sql/schema.sql` hold the 11 `TRACKS` values. `fetch_jobs.py
+  --per-ats` ranks sources by non-senior filings in `RANK_TRACKS` (DS + ML_ENGINEERING +
+  ML_RESEARCH), overridable with `--tracks`.
+- `companies` is insert-only: a company whose filings all became OTHER keeps its row but has
+  no evidence (783 after the switch to v5, incl. 2 with ATS sources: Pickle Robot, Omni
+  Instrument - SOC 17- filings). Don't delete them: `ats_sources` cascades.
 - ATS slugs guessed by `mapping/resolve_*.py` are wrong ~8% of the time (generic names like
   apex/general/insurance hit other companies' boards). Check each new slug against the
   board's own company name and record the outcome in `mapping/ats_slug_review.csv`; matching

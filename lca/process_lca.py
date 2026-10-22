@@ -6,17 +6,17 @@ lca/process_lca.py - raw LCA data -> aggregate by company + Track -> write to My
 Flow:
   data/raw/lca/*.xlsx -> keep only the needed columns per file, cached as
                          data/processed/lca_parquet/*.parquet
-             -> classify JOB_TITLE into a Track, drop OTHER
              -> de-duplicate by CASE_NUMBER (keep the row from the latest quarter)
              -> keep Certified only (not Certified - Withdrawn)
              -> drop staffing firms / universities / hospitals (common/names.py BODYSHOPS)
+             -> classify JOB_TITLE + SOC_CODE into a Track (common/tracks.py), drop OTHER
              -> flag senior titles (common/names.py TITLE_SKIP) for non_senior_filing_count
              -> convert wages to annual salary
              -> write companies and company_role_evidence
 
 The first run reads all 25 xlsx files and is slow (tens of minutes); later runs read the
-parquet cache and are fast. Changing the Track rules does not require re-reading the xlsx
-files - just rerun.
+parquet cache and are fast. The Track rules live in common/tracks.py (definitions in
+docs/TRACKS.md); changing them does not require re-reading the xlsx files - just rerun.
 
 Usage (from the project root): python3 lca/process_lca.py
 """
@@ -25,43 +25,17 @@ import re
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from common.db import get_conn                  # noqa: E402
 from common.names import BODYSHOPS, TITLE_SKIP, normalize    # noqa: E402
+from common.tracks import classify_title     # noqa: E402
 
 RAW_DIR = ROOT / "data" / "raw" / "lca"
 CACHE_DIR = ROOT / "data" / "processed" / "lca_parquet"
 ALL_PARQUET = ROOT / "data" / "processed" / "lca_all.parquet"
-
-# ------------------------------------------------ Track rules - edit here to change classification
-# Matched in order; the first hit wins (e.g. "ML Data Scientist" counts as ML_AI)
-TRACK_RULES = [
-    ("ML_AI", [
-        r"machine learning", r"\bml\b", r"deep learning", r"artificial intelligence",
-        r"\bai\b", r"computer vision", r"\bnlp\b", r"natural language",
-        r"applied scientist", r"\bperception\b",
-    ]),
-    ("DATA_SCIENCE", [
-        r"data scien", r"decision scien", r"statistician", r"data mining",
-        r"quantitative (?:research|analyst|developer|scientist|strateg)", r"\bquant\b",
-    ]),
-    ("DATA_ANALYTICS", [
-        r"data analy", r"analytics", r"business intelligence",
-        r"\bbi (?:engineer|developer|analyst)",
-    ]),
-]
-
-# Research titles are ambiguous (ML research vs. biology/chemistry research), so the title alone
-# does not decide: a title still classified OTHER that matches RESEARCH_TITLES becomes ML_AI only
-# when its SOC code is one of RESEARCH_ML_SOCS. Anything else (e.g. SOC 19-xxxx life/physical
-# sciences) stays OTHER.
-RESEARCH_TITLES = r"research scientist|research engineer|member of (?:the )?technical staff"
-RESEARCH_ML_SOCS = ("15-1221",   # Computer and Information Research Scientists
-                    "15-2051")   # Data Scientists
 
 # Phrases removed from a title before the senior check: their "staff" is not a level word.
 # A level word elsewhere in the title still counts ("Senior Member of Technical Staff").
@@ -133,13 +107,10 @@ def load_one(path):
 
 
 def classify(titles, socs):
-    t = titles.fillna("").str.lower()
-    conds = [t.str.contains("|".join(pats), regex=True, na=False).to_numpy(dtype=bool)
-             for _, pats in TRACK_RULES]
-    track = np.select(conds, [name for name, _ in TRACK_RULES], default="OTHER")
-    research = (t.str.contains(RESEARCH_TITLES, regex=True, na=False)
-                & socs.fillna("").str.strip().str.startswith(RESEARCH_ML_SOCS)).to_numpy(dtype=bool)
-    return np.where((track == "OTHER") & research, "ML_AI", track), research & (track == "OTHER")
+    """Track per row via common.tracks.classify_title, computed once per distinct (title, SOC)."""
+    key = list(zip(titles.fillna(""), socs.fillna("").str.strip()))
+    tracks = {k: classify_title(*k)[0] for k in set(key)}
+    return [tracks[k] for k in key]
 
 
 def annual_wage(df):
@@ -156,20 +127,16 @@ def main():
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     print(f"Found {len(files)} LCA files\n")
 
-    frames, n_raw, n_research = [], 0, 0
+    frames = []
     for i, f in enumerate(files, 1):
         df = load_one(f)
         if df is None:
             continue
-        n_raw += len(df)
-        df["track"], promoted = classify(df["title"], df["soc_code"])
-        n_research += int(promoted.sum())
-        df = df[df["track"] != "OTHER"]
         frames.append(df)
-        print(f"[{i}/{len(files)}] {f.name:<45} Track hits {len(df):,}", flush=True)
+        print(f"[{i}/{len(files)}] {f.name:<45} {len(df):,} records", flush=True)
 
     lca = pd.concat(frames, ignore_index=True)
-    n_track = len(lca)
+    n_raw = len(lca)
 
     # The same CASE_NUMBER can appear in several quarterly files (some DOL files are
     # cumulative, and the status can change); keep the row from the latest quarter
@@ -190,6 +157,10 @@ def main():
     bodyshop_re = "|".join(re.escape(b) for b in BODYSHOPS)
     lca = lca[~lca["norm"].str.lower().str.contains(bodyshop_re, regex=True, na=False)]
     n_clean = len(lca)
+
+    lca["track"] = classify(lca["title"], lca["soc_code"])
+    lca = lca[lca["track"] != "OTHER"].copy()
+    n_track = len(lca)
 
     # Same substring rule as legacy/build_companies.py: a title containing any TITLE_SKIP
     # marker is a senior filing and is left out of non_senior_filing_count (NOT_SENIOR_PHRASES
@@ -218,10 +189,10 @@ def main():
 
     print(f"\n{'='*54}")
     print(f"Raw records                  {n_raw:,}")
-    print(f"Track hits                   {n_track:,}  (incl. {n_research:,} research titles via SOC)")
     print(f"After CASE de-dup            {n_dedup:,}")
     print(f"Certified                    {n_cert:,}")
     print(f"After staffing/univ/hospital {n_clean:,}")
+    print(f"In a Track (not OTHER)       {n_track:,}")
     print(f"Companies                    {len(companies):,}")
     print(f"Company x Track              {len(evidence):,}")
     print("=" * 54)
@@ -272,7 +243,7 @@ def main():
         print(f"  ({n_missing} evidence rows had no matching company ID and were skipped)")
     print("company_role_evidence by Track:")
     for track, n, s, ns in by_track:
-        print(f"  {track:<16} {n:>6,} companies   {int(s):>8,} filings   {int(ns):>8,} non-senior")
+        print(f"  {track:<20} {n:>6,} companies   {int(s):>8,} filings   {int(ns):>8,} non-senior")
 
     print("\nTop 15 by filing count:")
     top = (evidence.groupby("norm")["filing_count"].sum()
