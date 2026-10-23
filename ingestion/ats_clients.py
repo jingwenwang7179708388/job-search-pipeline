@@ -79,9 +79,21 @@ def fetch_lever(slug):
             "location": cat.get("location", ""),
             "url": j.get("hostedUrl", ""),
             "posted": posted,
-            "desc": strip_html(j.get("descriptionPlain") or j.get("description", "")),
+            "desc": _lever_desc(j),
         })
     return out
+
+
+def _lever_desc(j):
+    """Lever splits a posting into the description, lists (responsibilities, requirements -
+    usually where years of experience are) and additional text (often work authorization /
+    clearance). Join them so the JD is complete; parts are separated by newlines."""
+    parts = [strip_html(j.get("descriptionPlain") or j.get("description", ""))]
+    for lst in j.get("lists") or []:
+        parts.append(strip_html(lst.get("text", "")))
+        parts.append(strip_html(lst.get("content", "")))
+    parts.append(strip_html(j.get("additionalPlain") or j.get("additional", "")))
+    return "\n".join(p for p in parts if p)
 
 
 def fetch_ashby(slug):
