@@ -29,6 +29,11 @@ The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*
   11 values.
 - One company split across legal entities (Amazon/AWS, Meta/Facebook): not handled in these
   3 days; listed as a known limitation.
+- Known limitation: the clearance rule in `processing/process_jobs.py` does not understand
+  conditional wording ("For USG: required. For all other roles: a plus"). On the current data
+  this gives 3 false positives (Palantir "Year at Palantir" internships that are not USG);
+  clearance hits checked by hand: 77/80 correct. Not fixed with a rule written for one
+  company's phrasing.
 - No LLM calls in these 3 days: keywords and regex only.
 - Code, comments, SQL comments and logs in English.
 
@@ -54,12 +59,37 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
 
 ## Day 2 - job processing and recommendations
 
-1. `processing/process_jobs.py`, pending only: Track classification (`OTHER` →
-   `global_eligible = FALSE`); regex for years of experience, seniority, citizenship /
-   clearance / sponsorship restrictions; fixed skill list (Python, SQL, R as a whole word,
-   Tableau, Power BI, Spark, AWS, PyTorch, TensorFlow, Machine Learning); visa evidence level
-   Likely (same-Track non-senior filings ≥ 5 and no JD restriction) / Unclear (1-4) /
-   Unlikely (no filings in the last 3 years) / Blocked (JD restriction).
+1. `processing/process_jobs.py` (pending jobs; `--retry-failed`, `--all`, `--limit`,
+   `--dry-run`), keywords and regex only, into `job_features`:
+   - Track = `common.tracks.classify_title(title, None)` (v6 no-SOC fallback). OTHER jobs:
+     role_family OTHER, visa_evidence Unclear, other fields at their defaults, no extraction;
+     ranking filters them out by Track.
+   - Seniority from title level words first: intern / internship / co-op → intern; senior,
+     sr, lead, staff, principal, manager, director, head, vp, III-V → senior; II → mid;
+     associate (alone), junior, jr, I, new grad, entry level, early career → entry. "Member of
+     technical staff" is not a level. No level word: by min years (0-1 entry, 2-4 mid, 5+
+     senior), else unknown.
+   - min_years_experience: smallest "N years ... experience" in the JD, > 20 dropped, NULL
+     when none.
+   - Restrictions: requires_citizenship, requires_clearance, no_sponsorship, each match judged
+     on its local context (about 100 chars before it to the next sentence end, cut at line and
+     list-item breaks, since Lever list items arrive glued together). Skipped: EEO
+     boilerplate, card-network "Visa", executive / employer / bank sponsors, and optional
+     wording (preferred, a plus, nice to have, beneficial, not necessary, not required,
+     optional). Foreign security clearances (UK, AUS, NATO, ...) also count as clearance →
+     Blocked: they are foreign-government roles an H-1B candidate cannot take either.
+     `global_eligible = FALSE` only for citizenship or clearance.
+   - Skills: fixed list (Python, SQL, R case-sensitive and not R&D, Tableau, Power BI, Spark,
+     AWS, PyTorch, TensorFlow, Machine Learning), JSON array.
+   - visa_evidence from `company_role_evidence`, same company and same Track (n = non-senior
+     filings, recent = latest_year ≥ 2024), first match: Blocked (any JD restriction) /
+     Unlikely (the company has no recent filing in any Track, or no evidence) / Likely
+     (n ≥ 5 and recent) / Unclear (everything else).
+   - Upsert into `job_features` and set `jobs.processing_status = processed` in one
+     transaction, commit every 500; a failing job is rolled back to its savepoint, marked
+     failed, and the run continues.
+   - Needs the Lever JD fix (`a381262`): before it, Lever JDs lacked the requirements and
+     additional sections, so years and restrictions were mostly missing.
 2. Test user: DATA_SCIENCE + ML_ENGINEERING + ML_RESEARCH; Python / SQL / Spark / PyTorch;
    1 year; CA / NY / Remote; needs sponsorship.
 3. `recommendation/rank_jobs.py`: 48-hour window (fall back to 30 days, UI shows "Demo time
