@@ -9,7 +9,7 @@ A MySQL-centered job recommender for new-grad Data/ML/AI candidates who need H-1
 
 LCA data → company visa evidence (MySQL) → fetch postings from ATS → job lifecycle
 (new / updated / closed) → feature extraction → rule-based scoring against a user profile →
-Top 10 → Streamlit UI + user feedback → DSCI 551 SQL and index experiments.
+Top 20 → Streamlit UI + user feedback → DSCI 551 SQL and index experiments.
 
 The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*.csv`) is kept in
 `legacy/` and is no longer extended.
@@ -43,7 +43,7 @@ The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*
 - No LLM calls in these 3 days: keywords and regex only.
 - Code, comments, SQL comments and logs in English.
 
-Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experiments > UI polish.
+Priority: DB correctness > data in the DB > Top 20 > feedback saved > 551 experiments > UI polish.
 
 ## Day 1 - database and data pipeline
 
@@ -98,12 +98,16 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
      additional sections, so years and restrictions were mostly missing.
 2. Test user: DATA_SCIENCE + ML_ENGINEERING + ML_RESEARCH; Python / SQL / Spark / PyTorch;
    1 year; CA / NY / Remote; needs sponsorship.
-3. `recommendation/rank_jobs.py`: 48-hour window (fall back to 30 days, UI shows "Demo time
-   window: 30 days / Production target: 48 hours"); Track 25 / skills 25 / experience 15 /
-   location 10 / freshness 10 / visa 15; at most 2 per company; Top 10 into `recommendations`.
-4. `app/streamlit_app.py`: database overview / Top 10 cards / feedback buttons writing
+3. `recommendation/rank_jobs.py`: only jobs with `missing_run_count = 0` (present in their
+   source's latest successful fetch; a job missing from it has probably been taken down, and
+   with posted_at NULL it would look fresh through first_seen_at); 48-hour window (fall back
+   to 30 days, UI shows "Demo time window: 30 days / Production target: 48 hours"); Track 25
+   / skills 25 / experience 15 / location 10 / freshness 10 / visa 15; at most 2 per company;
+   Top 20 into `recommendations` (fewer when there are fewer candidates, never padded). 20, not
+   10: a Top 10 was almost only large companies the user already knows - too few.
+4. `app/streamlit_app.py`: database overview / Top 20 cards / feedback buttons writing
    `user_interactions` / SQL experiment page.
-5. Check: generate Top 10 in Streamlit → click Saved → the row is in MySQL.
+5. Check: generate Top 20 in Streamlit → click Saved → the row is in MySQL.
 
 ## Day 3 - 551 experiments, tests, cleanup
 
@@ -113,7 +117,7 @@ Priority: DB correctness > data in the DB > Top 10 > feedback saved > 551 experi
    `jobs(status, first_seen_at)`; `job_features(role_family, global_eligible, job_id)`;
    EXPLAIN ANALYZE, median of several runs; label any simulated data.
 3. End-to-end test: no duplicate inserts; `first_seen_at` not overwritten; Updated detected;
-   OTHER and closed never in Top 10; ranks are 1-10; feedback written to the DB.
+   OTHER and closed never in Top 20; ranks are 1-20; feedback written to the DB.
 4. ER diagram, README results, `requirements.txt`, screenshots.
 
 ## Notes for upcoming steps

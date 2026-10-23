@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8. Recommendations (one batch of Top 10 per generation)
+-- 8. Recommendations (one batch of up to 20 per generation)
 CREATE TABLE IF NOT EXISTS recommendations (
     recommendation_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id           INT UNSIGNED NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS recommendations (
     generated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_rec_batch_rank (batch_id, rank_position),
     UNIQUE KEY uq_rec_batch_job  (batch_id, job_id),
-    CHECK (rank_position BETWEEN 1 AND 10),
+    CONSTRAINT chk_rec_rank CHECK (rank_position BETWEEN 1 AND 20),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (job_id)  REFERENCES jobs(job_id)   ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

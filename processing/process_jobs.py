@@ -8,7 +8,8 @@ Per job (title + JD text), keywords and regex only:
                  its empty / default value, marked processed; nothing else is extracted.
   seniority      intern / entry / mid / senior / unknown. From the title's level words first
                  (common.tracks.normalize_title levels; "member of technical staff" is not a
-                 level): intern / internship / co-op -> intern; senior, sr, lead, staff,
+                 level): intern / internship / co-op / student worker / contract student
+                 -> intern; senior, sr, lead, staff,
                  principal, manager, director, head, vp, iii, iv, v -> senior; ii -> mid;
                  associate, junior, jr, i, new grad, entry level, early career, university
                  graduate -> entry. No level word: by min_years_experience (0-1 entry, 2-4 mid,
@@ -73,7 +74,8 @@ MAX_HITS = 30               # restriction hits listed per type in --dry-run
 
 # ------------------------------------------------ seniority
 MTS_RE = re.compile(r"member of (?:the )?technical staff", re.I)
-INTERN_RE = re.compile(r"\b(?:intern|interns|internship|internships|co ?op)\b")
+INTERN_RE = re.compile(r"\b(?:intern|interns|internship|internships|co ?op|student workers?|"
+                       r"contract students?)\b")
 ENTRY_TITLE_RE = re.compile(r"\b(?:new grad\w*|recent grad\w*|entry level|early career|"
                             r"university grad\w*|college grad\w*)\b")
 SENIOR_LEVELS = {"senior", "sr", "lead", "staff", "principal", "manager", "managers", "director",
