@@ -148,3 +148,20 @@ For each row in `track_labels_*.csv`, read the raw title (and SOC if present) an
 ## Scope
 
 SOFTWARE_ENGINEERING postings from companies we already monitor are classified and can be recommended, but we do not add companies to the monitored list only because they sponsor SWE roles.
+
+## No-SOC fallback (v6)
+
+ATS postings have no SOC code, so a vague title that LCA filings would settle with a SOC tie-break used to end up as OTHER. v6 adds one fallback for that case only. It applies **only when there is no SOC and the title has no core word** (no analyst / scientist / engineer / developer / sde) but passes the vague data/ML gate (data science, analytics, statistics, machine learning, ai, research). With a SOC, or with a core word, the v5 rules are unchanged; LCA results and the 85% hand-label precision are the same as v5.
+
+In order:
+
+1. **Non-engineering role -> OTHER** if the title has any of: account executive, sales, marketing, customer success / support / service / experience / care, recruiter, recruiting, legal, partnership(s), product manager, program manager, project manager, solutions architect, business development, commercialization, account manager, client, enablement, accounting, business risk.
+2. **research / researcher plus an ML/AI word -> ML_RESEARCH.** A PhD requirement is a degree, not the work output, so "phd" alone does not count as research.
+3. **Any other ML/AI word -> ML_ENGINEERING.**
+4. Otherwise OTHER, as in v5.
+
+ML/AI words (whole words): machine learning, ml, ai, artificial intelligence, deep learning, llm(s), computer vision, nlp, foundation model(s), world model(s), vlm, post training / post-training, perception.
+
+Level words (intern, manager, director, ...) still never change the Track: "Machine Learning Intern" and "Director, Machine Learning Engineering" are ML_ENGINEERING. Analysts and engineers with no direction word stay OTHER without a SOC.
+
+Known limitation: research internships whose title has no ML/AI word (e.g. "2027 Summer Intern, PhD, Research, AV Planning", "... Research, World Action Model") still fall into OTHER. A later version could fall back on the JD text instead of adding words for specific titles.
