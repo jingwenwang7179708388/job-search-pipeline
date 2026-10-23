@@ -1,0 +1,23 @@
+rank,company_id,company_name,evidence,ats,slug,board_name,name_ratio,n_jobs,confidence,reason
+1022,11206,"Klaviyo, Inc.",28,greenhouse,klaviyo,Klaviyo,1.0,164,high,
+1048,2036,"Athena Tech, Inc.",27,greenhouse,athena,Athena Group Advisors,0.5,3,low,name mismatch
+1067,9478,"Horizon Soft Solutions, Inc",27,lever,horizon,Horizon Robotics,0.69,1,low,name mismatch; generic or short slug; slug already in ats_sources
+1175,7718,Flex Consulting Group Inc.,25,greenhouse,flex,Flex,0.44,26,low,name mismatch
+1199,17144,SAR TECH LLC,25,lever,sar,SAR Academy &amp; SAR High School,0.36,17,low,name mismatch; generic or short slug
+1235,4438,CLOUD BIG DATA TECHNOLOGIES LLC,24,smartrecruiters,cloudbigdatatechnologies,Cloudbigdata Technologies,1.0,8,high,
+2222,13619,"New Era Technology, Inc.",15,greenhouse,neweratechnology,New Era Tech,0.77,1,low,name mismatch
+2447,17769,Singular Analysts Inc,14,ashby,singular,Singular,0.67,16,low,name mismatch
+2752,1522,Apex Logistics International Inc.,12,greenhouse,apex,Apex Eye,0.3,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2776,3886,"Celerion, Inc.",12,lever,celerion,Celerion,1.0,33,high,
+3301,105859,"OpenGov, Inc.",11,ashby,opengov,OpenGov,1.0,80,high,
+3433,8131,Gain Theory LLC,10,greenhouse,gaintheory,Gain Theory,1.0,2,high,
+3461,10077,"Inherent Technologies, LLC",10,ashby,inherent,Inherent,0.57,6,low,name mismatch
+3471,10909,"Juul Labs, Inc.",10,greenhouse,juullabs,Juul Labs,1.0,10,high,
+3827,9968,Infinite Tek Inc,9,ashby,infinite,Infinite,0.84,2,low,name mismatch; slug already in ats_sources
+4136,1062,AlphaSense Inc.,8,greenhouse,alphasense,AlphaSense,1.0,213,high,
+4263,7972,Freshworks Inc.,8,smartrecruiters,freshworks,Freshworks,1.0,128,high,
+4346,12123,"Magnetar Capital, LLC",8,greenhouse,magnetar,Magnetar,0.7,5,low,name mismatch
+4432,16472,"Resonate Networks, Inc.",8,greenhouse,resonate,Resonate,0.67,8,low,name mismatch
+4597,85893,"Everest Global Solutions, Inc.",8,recruitee,everest,Everest Commerce Group B.V.,0.46,17,low,name mismatch
+4609,90147,Grand BK Corp.,8,lever,grand,Grand Games,0.59,8,low,name mismatch
+4706,1100,"Altman Solon US, LP",7,greenhouse,altmansolonuslp,Altman Solon,1.0,16,high,

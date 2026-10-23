@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS ats_sources (
     company_id      INT UNSIGNED NOT NULL,
     ats_type        VARCHAR(30) NOT NULL,               -- greenhouse / lever / ...
     slug            VARCHAR(255) NOT NULL,
+    board_name      VARCHAR(255),                       -- company name shown on the ATS board
+    confidence      ENUM('high','low','verified'),      -- slug check: verified = checked by hand (mapping/ats_slug_review.csv)
+    discovered_by   VARCHAR(40),                        -- companies_csv (mapping/resolve_slugs.py list) / resolve_slugs_db
+    discovered_at   DATETIME DEFAULT CURRENT_TIMESTAMP, -- NULL for the companies_csv rows (found before this column)
     is_active       BOOLEAN NOT NULL DEFAULT TRUE,
     last_success_at DATETIME,
     UNIQUE KEY uq_ats_type_slug (ats_type, slug),

@@ -1,0 +1,564 @@
+rank,company_id,company_name,evidence,ats,slug,board_name,name_ratio,n_jobs,confidence,reason
+4,12768,Microsoft Corporation,3337,greenhouse,microsoftcorporation,Microsoft AI,0.9,70,low,name mismatch
+27,1592,"Applied Materials, Inc",466,ashby,applied,Applied Intuition,0.56,329,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv); slug already in ats_sources
+36,20087,"Tiger Analytics, Inc.",403,ashby,tiger,Tiger,0.53,4,low,name mismatch
+73,10220,"Insurance Services Office, Inc.",214,greenhouse,insurance,Alpha FMC - Insurance Consulting,0.44,10,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+77,21845,"Western Digital Technologies, Inc.",200,smartrecruiters,westerndigital,Western Digital,0.7,342,low,name mismatch
+92,17463,"ServiceNow, Inc.",168,smartrecruiters,servicenow,ServiceNow,1.0,714,high,
+98,18386,SPRUCE TECHNOLOGY INC.,161,ashby,spruce,Spruce,0.55,4,low,name mismatch
+138,793,"AIRBNB, INC.",126,greenhouse,airbnb,Airbnb,1.0,192,high,
+176,8271,General Motors,107,greenhouse,general,General Interest ,0.71,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+181,10392,"Intuitive Surgical Operations, Inc.",104,smartrecruiters,intuitive,Intuitive,0.5,766,low,name mismatch; slug already in ats_sources
+187,20138,Titan Technologies Inc.,101,ashby,titan,Titan,0.45,11,low,name mismatch; generic or short slug
+210,18400,"SQUAD SOFTWARE, INC.",92,greenhouse,squad,SQUAD,0.56,21,low,name mismatch
+264,19182,TANISHA SYSTEMS INC,75,smartrecruiters,tanishasystems,Tanisha Systems,1.0,35,high,
+284,14369,"OpenAI OpCo, LLC",72,ashby,openai,OpenAI,0.75,794,low,name mismatch
+293,11746,Lincoln National Corporation,71,greenhouse,lincoln,Lincoln Property Company through LinkedIn,0.44,8,low,name mismatch
+294,14118,"OATH HOLDINGS, INC.",71,greenhouse,oath,Oath Animal Hospital,0.36,4,low,name mismatch
+295,1638,"AQR Capital Management, LLC",70,greenhouse,aqr,AQR,0.26,56,low,name mismatch; generic or short slug
+296,9122,HEALTH CARE SERVICE CORPORATION,70,lever,healthcare,HealthCare,0.74,7,low,name mismatch
+319,17995,Snowflake Inc.,68,ashby,snowflake,Snowflake,1.0,354,high,
+324,14046,Numero Data LLC,67,smartrecruiters,numerodatallc,Numero Data LLC,1.0,9,high,
+333,9831,"IMC Americas, Inc.",65,greenhouse,imc,IMC,0.43,170,low,name mismatch; generic or short slug
+353,7297,Experian Information Solutions Inc.,62,smartrecruiters,experian,Experian,0.44,384,low,name mismatch; slug already in ats_sources
+381,6313,"Duolingo, Inc.",58,greenhouse,duolingo,Duolingo,1.0,60,high,
+385,15153,"Pinnacle Technical Resources, Inc.",58,smartrecruiters,pinnacletechnicalresources,Pinnacle Technical Resources,1.0,7,high,
+405,18006,"Social Finance, Inc.",57,greenhouse,socialfinance,Social Finance,1.0,6,high,
+409,3769,"Carvana, LLC",56,greenhouse,carvana,Carvana,1.0,1679,high,
+417,17160,SAS Institute Inc.,56,greenhouse,sas,Superior Alarm Systems,0.38,3,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+422,4867,Conflux Systems Inc,55,recruitee,conflux,Conflux,0.67,12,low,name mismatch
+431,1816,Artificial Inventions LLC,54,ashby,artificial,Artificial Labs,0.65,13,low,name mismatch
+440,7003,"Epitec, Inc.",53,smartrecruiters,epitecinc,Epitec Inc.,1.0,22,high,
+446,16746,"Roku, Inc.",53,greenhouse,roku,Roku,1.0,85,high,
+451,122959,"US Tiger Securities, Inc.",53,ashby,tiger,Tiger,0.5,4,low,name mismatch
+470,16560,RGA Enterprise Services Company,51,greenhouse,rga,R/GA Careers Page,0.29,11,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+484,21714,"Wavicle Data Solutions, LLC",50,lever,wavicledata,Wavicle Data Solutions,1.0,5,high,
+495,11777,LionTree LLC,49,greenhouse,liontree,LionTree,1.0,3,high,
+504,22524,"ZoomInfo Technologies, LLC",49,greenhouse,zoominfo,ZoomInfo Technologies LLC,1.0,99,high,
+506,2882,"BLEND360, LLC",48,smartrecruiters,blend360,Blend360,1.0,169,high,
+511,8578,"GoDaddy.com, LLC",48,greenhouse,godaddy,GoDaddy,0.82,37,low,name mismatch
+524,3706,"CAREER SOFT SOLUTIONS, INC.",47,lever,career,,0.0,1,low,no board name
+529,9049,Harvey Nash Inc.,47,ashby,harvey,Harvey,0.75,353,low,name mismatch
+559,10454,IPIVOT LLC,45,smartrecruiters,ipivot,ipivot,1.0,6,high,
+560,10816,Joblogic-X Corporation,45,greenhouse,joblogic,Joblogic,0.94,21,low,name mismatch
+561,12300,Marshall Wace North America LP,45,greenhouse,marshallwace,Marshall Wace,0.67,1,low,name mismatch
+570,944,"Align Technology, Inc.",44,greenhouse,align,A-LIGN External,0.64,12,low,name mismatch
+578,13101,MOTIVITY LABS INC,44,greenhouse,motivity,Motivity,0.8,1,low,name mismatch
+584,21171,"Verana Health, Inc.",44,greenhouse,veranahealth,Verana Health,1.0,6,high,
+586,21927,"William Blair & Company, LLC",44,greenhouse,williamblair,William Blair,1.0,52,high,
+590,1397,"Anaplan, Inc.",43,greenhouse,anaplan,Anaplan,1.0,143,high,
+595,10152,"Inovalon, Inc.",43,ashby,inovalon,Inovalon,1.0,35,high,
+596,10297,INTELLYK INC.,43,smartrecruiters,intellykinc,Intellyk INC,1.0,10,high,
+599,15489,PRESBYTERIAN HEALTHCARE SERVICES,43,smartrecruiters,presbyterianhealthcareservices,Presbyterian Healthcare Services,1.0,5,high,
+612,11639,Lex Nimble Solutions Inc.,42,greenhouse,lex,"Lex Cooling, Heating, Plumbing and Electric",0.43,10,low,name mismatch; generic or short slug
+631,17780,SIRI INFOSOLUTIONS INC.,41,smartrecruiters,siriinfosolutionsinc,SIRI INFO SOLUTIONS INC,1.0,8,high,
+659,4378,"Clearwater Analytics, LLC",39,greenhouse,clearwater,Clearwater,0.69,15,low,name mismatch
+661,6195,"DOTS TECHNOLOGIES, INC.",39,greenhouse,dots,Dots,0.4,1,low,name mismatch
+681,1226,American Institutes for Research,38,greenhouse,americaninstitutesforresearch,American Institutes for Research,1.0,13,high,
+693,12383,"MAVEN COMPANIES, INC.",38,ashby,maven,Maven,0.53,3,low,name mismatch; slug already in ats_sources
+696,16130,"RAMPS INTERNATIONAL, INC",38,smartrecruiters,rampsinternationalinc,Ramps International inc,1.0,12,high,
+702,20890,"Upstart Network, Inc.",38,greenhouse,upstart,Upstart,0.67,88,low,name mismatch
+713,7731,"Flexport, Inc.",37,greenhouse,flexport,Flexport,1.0,191,high,
+723,19393,"Technogen, Inc.",37,smartrecruiters,technogen,Technogen,1.0,48,high,
+732,1525,Apex Technology Group Inc.,36,greenhouse,apex,Apex Eye,0.57,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+733,2964,"Blue Yonder, Inc.",36,lever,blue,"BlueCloud Services, Inc.",0.59,9,low,name mismatch; generic or short slug
+742,16179,Raven Software Solutions Inc,36,greenhouse,raven,Raven,0.37,2,low,name mismatch
+743,16466,"Resolve AI, Inc.",36,ashby,resolveai,ResolveAI,1.0,19,high,
+757,1381,"Analog Devices, Inc.",35,ashby,analog,Analog,0.63,27,low,name mismatch
+773,15689,Prophecy Consulting Inc.,35,smartrecruiters,prophecyconsultinginc,Prophecy Consulting Inc.,1.0,6,high,
+793,12036,LynxTech Group LLC,34,greenhouse,lynxtech,Lynx,0.67,11,low,name mismatch
+795,13212,"MultiPlan, Inc.",34,recruitee,multiplan,MIND - Multiplan,0.82,7,low,name mismatch
+799,19576,Telligen Tech Inc.,34,lever,telligen,Telligen,0.8,12,low,name mismatch
+801,20444,TripAdvisor LLC,34,greenhouse,tripadvisor,Tripadvisor,1.0,86,high,
+803,21477,VIVID TECHNOLOGIES INC,34,ashby,vivid,Como,0.29,5,low,name mismatch
+830,20725,UNIFY SOLUTIONS INC,33,lever,unify,,0.0,9,low,no board name
+835,115099,Sierra Digital Inc,33,ashby,sierra,Sierra,0.63,210,low,name mismatch
+857,15078,Phoenix Innovations LLC,32,ashby,phoenix,Phoenix,0.56,10,low,name mismatch; generic or short slug
+860,17511,"SGS TECHNOLOGIE, LLC",32,smartrecruiters,sgs,SGS,0.35,4639,low,name mismatch; generic or short slug
+864,21988,Wise Equation Solutions Inc.,32,greenhouse,wise,Wise Worksite Field Sales ,0.33,21,low,name mismatch
+870,5118,"Coupa Software, Inc.",31,lever,coupa,"Coupa Software, Inc.",1.0,39,high,
+872,7682,FIVE RINGS LLC,31,greenhouse,fiveringsllc,Five Rings LLC - Careers,1.0,17,high,
+907,10351,"INTERNATIONAL TECHNOLOGY SOLUTIONS, INC.",30,greenhouse,technology,Relai ,0.05,1,low,name mismatch; rejected before (ats_slug_review.csv)
+914,13031,"MONGODB, INC.",30,greenhouse,mongodb,MongoDB,1.0,383,high,
+919,15922,"Quantbot Technologies, LP",30,greenhouse,quantbot-technologies,Quantbot Technologies,1.0,7,high,
+945,7545,"Figma, Inc.",29,greenhouse,figma,Figma,1.0,139,high,
+946,7712,"Flatiron Health, Inc.",29,greenhouse,flatironhealth,Flatiron Health,1.0,23,high,
+957,13943,Northwestern Mutual Life Insurance Company,29,smartrecruiters,northwesternmutual,Northwestern Mutual,0.73,69,low,name mismatch
+958,14218,"Okta, Inc.",29,greenhouse,okta,Okta,1.0,389,high,
+960,15218,Plaid Inc.,29,ashby,plaid,Plaid,1.0,135,high,
+977,3229,Brex Inc.,28,greenhouse,brex,Brex,1.0,254,high,
+992,11206,"Klaviyo, Inc.",28,greenhouse,klaviyo,Klaviyo,1.0,164,high,
+995,13755,Nexus IT Inc,28,greenhouse,nexus,CGS Nexus,0.67,2,low,name mismatch
+997,14524,OSO Ventures Inc,28,ashby,oso,Oso,0.43,7,low,name mismatch; generic or short slug
+999,16120,Ralph Lauren Corporation,28,ashby,ralph,Ralph Management,0.62,12,low,name mismatch
+1010,21800,"WELLNECITY, LLC",28,ashby,wellnecity,Wellnecity,1.0,2,high,
+1018,2036,"Athena Tech, Inc.",27,greenhouse,athena,Athena Group Advisors,0.5,3,low,name mismatch
+1037,9478,"Horizon Soft Solutions, Inc",27,lever,horizon,Horizon Robotics,0.69,1,low,name mismatch; generic or short slug; slug already in ats_sources
+1046,12060,M3BI LLC,27,smartrecruiters,m3bi,M3BI,1.0,6,high,
+1051,13828,Nirvana Enterprises LLC,27,ashby,nirvana,Nirvana Insurance,0.47,8,low,name mismatch
+1053,14782,"PathAI, Inc.",27,greenhouse,pathai,PathAI,1.0,16,high,
+1056,16764,"ROOTSHELL ENTERPRISE TECHNOLOGIES, INC",27,smartrecruiters,rootshellenterprisetechnologies,Rootshell Enterprise Technologies,1.0,53,high,
+1076,1599,AppLovin Corporation,26,greenhouse,applovin,AppLovin,1.0,43,high,
+1087,5625,"Databricks, Inc.",26,greenhouse,databricks,Databricks,1.0,895,high,
+1092,8263,GENERAL ELECTRIC COMPANY,26,greenhouse,general,General Interest ,0.67,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1104,11946,LPL Financial LLC,26,greenhouse,lpl,Little People's Landing,0.31,5,low,name mismatch; generic or short slug
+1105,12435,"McAfee, LLC",26,greenhouse,mcafee,McAfee Heating and Air Conditioning,0.35,2,low,name mismatch
+1124,22080,"WorldQuant, LLC",26,greenhouse,worldquant,WorldQuant,1.0,95,high,
+1129,295,"ACADIAN ASSET MANAGEMENT, LLC",25,greenhouse,acadianassetmanagementllc,Acadian Asset Management LLC,1.0,16,high,
+1132,2628,Benjamin Moore & Co.,25,greenhouse,benjamin,Benjamin,0.76,2,low,name mismatch
+1144,7718,Flex Consulting Group Inc.,25,greenhouse,flex,Flex,0.44,26,low,name mismatch
+1152,10093,InMarket Media LLC,25,greenhouse,inmarket,InMarket,0.76,13,low,name mismatch
+1154,10524,"iSpace, Inc.",25,smartrecruiters,ispaceinc,"iSpace, Inc.",1.0,5,high,
+1168,17144,SAR TECH LLC,25,lever,sar,SAR Academy &amp; SAR High School,0.36,17,low,name mismatch; generic or short slug
+1170,17663,Sierra Consulting Inc,25,ashby,sierra,Sierra,0.55,210,low,name mismatch
+1171,18189,"Source Consulting, LLC",25,lever,source,Source,0.55,3,low,name mismatch
+1172,18423,SRI SAI LLC,25,recruitee,sri,SRI Rechtsanwaltsgesellschaft mbH,0.27,8,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1175,19401,Technology Hub Inc,25,greenhouse,technology,Relai ,0.22,1,low,name mismatch; rejected before (ats_slug_review.csv)
+1177,19676,Texas Health Resources,25,smartrecruiters,texashealthresources,Texas Health Resources,1.0,9,high,
+1192,1520,Apex Informatics LLC,24,greenhouse,apex,Apex Eye,0.36,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1201,4438,CLOUD BIG DATA TECHNOLOGIES LLC,24,smartrecruiters,cloudbigdatatechnologies,Cloudbigdata Technologies,1.0,8,high,
+1209,6328,"DV01, Inc.",24,greenhouse,dv01,dv01,1.0,5,high,
+1219,10036,"Infosmart Technologies, Inc.",24,smartrecruiters,infosmart,InfoSmart,0.6,5,low,name mismatch
+1229,14158,Octagon IT LLC,24,greenhouse,octagon,Octagon,0.88,5,low,name mismatch
+1249,20621,Uber Freight US LLC,24,greenhouse,uberfreight,Uber Freight,1.0,77,high,
+1250,20721,Unified Tech Group Inc,24,greenhouse,unified,Unified Life Insurance,0.58,7,low,name mismatch
+1260,98630,"KYRA SOLUTIONS, INC",24,ashby,kyra,Kyra,0.47,11,low,name mismatch
+1264,568,ADVITHRI TECHNOLOGIES LLC,23,smartrecruiters,advithritechnologiesllc,Advithri Technologies LLC,1.0,10,high,
+1271,2761,Bill.com,23,greenhouse,billcom,BILL,0.73,45,low,name mismatch
+1282,6209,"Doximity, Inc.",23,greenhouse,doximity,Doximity,1.0,16,high,
+1285,6470,ECHELON IT INC.,23,ashby,echelon,Echelon,0.88,3,low,name mismatch
+1290,8308,"Geneva Trading USA, LLC",23,greenhouse,genevatrading,Geneva Trading,1.0,13,high,
+1312,19142,Talent Clustr LLC,23,greenhouse,talent,Slice Talent Community,0.56,2,low,name mismatch
+1315,19402,"Technology Partners, Inc.",23,greenhouse,technology,Relai ,0.26,1,low,name mismatch; rejected before (ats_slug_review.csv)
+1347,8897,"GUMGUM, INC",22,greenhouse,gumgum,GumGum,1.0,10,high,
+1355,10515,ISN Software Corporation,22,greenhouse,isn,ISN Software Corporation,1.0,15,low,generic or short slug
+1359,11373,"Kyyba, Inc.",22,smartrecruiters,kyybainc,KYYBA Inc,1.0,5,high,
+1369,13516,"NerdWallet, Inc.",22,ashby,nerdwallet,NerdWallet,1.0,23,high,
+1376,14925,"Penumbra, Inc.",22,lever,penumbrainc,Penumbra,1.0,77,high,
+1379,15289,PMG Worldwide LLC,22,greenhouse,pmg,PMG,0.4,86,low,name mismatch; generic or short slug
+1383,17465,"ServiceTitan, Inc.",22,smartrecruiters,servicetitan,ServiceTitan,1.0,8,high,
+1390,20864,"Upgrade, Inc.",22,greenhouse,upgrade,Upgrade,1.0,26,high,
+1411,1335,"Amount, Inc.",21,greenhouse,amount,FIS® Amount™,0.8,3,low,name mismatch
+1423,7261,"Excyl, Inc",21,smartrecruiters,excylinc,Excyl Inc,1.0,7,high,
+1424,7368,"Faire Wholesale, Inc.",21,greenhouse,faire,Faire,0.53,72,low,name mismatch
+1447,17538,SharkNinja Operating LLC,21,greenhouse,sharkninjaoperatingllc,SharkNinja,0.69,149,low,name mismatch
+1467,21767,Weee! Inc.,21,greenhouse,weee,Weee! Inc,1.0,22,high,
+1469,22504,"ZipRecruiter, Inc.",21,greenhouse,ziprecruiter,ZipRecruiter,1.0,44,high,
+1484,1517,"APEX Analytix, LLC",20,greenhouse,apex,Apex Eye,0.53,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1485,1814,ARTIFICIAL INTELLIGENCE LLC,20,ashby,artificial,Artificial Labs,0.61,13,low,name mismatch
+1487,2949,BLUE PLANET INC,20,lever,blue,"BlueCloud Services, Inc.",0.44,9,low,name mismatch; generic or short slug
+1498,7312,"Extend, Inc.",20,greenhouse,extend,Extend,1.0,19,high,
+1500,8036,FULCRUM CONSULTING INC,20,ashby,fulcrum,Fulcrum,0.58,13,low,name mismatch
+1501,8195,"GATEWAY SOLUTIONS, INC.",20,greenhouse,gateway,Gateway Aesthetic Institute & Laser Center ,0.42,2,low,name mismatch; rejected before (ats_slug_review.csv)
+1510,10162,"Insight Direct USA, Inc.",20,greenhouse,insight,Insight,0.7,10,low,name mismatch
+1516,13059,"Moore Capital Management, LP",20,recruitee,moore,Moore Belgium,0.41,135,low,name mismatch
+1527,15952,QUANTUM TECHNOLOGIES LLC,20,ashby,quantum,Quantum,0.54,16,low,name mismatch; generic or short slug; slug already in ats_sources
+1547,20802,United States Fire Insurance Company,20,greenhouse,unitedstates,capSpire - US,0.24,4,low,name mismatch
+1565,654,AGAP TECHNOLOGIES INC,19,smartrecruiters,agaptechnologies,Agap Technologies,1.0,7,high,
+1567,1519,Apex Fintech Services LLC,19,greenhouse,apex,Apex Eye,0.46,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1585,6847,"Energy Exemplar, LLC",19,greenhouse,energyexemplarllc,Energy Exemplar ,1.0,44,high,
+1603,10691,"JAM CITY, INC.",19,lever,jamcity,Jam City,1.0,15,high,
+1640,18602,"Stellar Services, Inc.",19,ashby,stellar,Stellar Development Foundation,0.47,24,low,name mismatch
+1644,20088,"Tiger Global Management, LLC",19,ashby,tiger,Tiger,0.38,4,low,name mismatch
+1651,21850,"Western Union, LLC",19,greenhouse,westernunion,Western Union,1.0,5,high,
+1655,68035,"22nd Century Technologies, Inc.",19,smartrecruiters,22ndcenturytechnologiesinc,22nd Century Technologies Inc.,1.0,21,high,
+1668,118569,Sterling Software Inc.,19,greenhouse,sterling,Sterling Brands,0.6,2,low,name mismatch
+1670,790,AIR Worldwide Corporation,18,greenhouse,air,Air,0.4,35,low,name mismatch; generic or short slug
+1675,2213,"Avani Technology Solutions, Inc.",18,greenhouse,avani,Avani Media,0.41,1,low,name mismatch
+1685,3657,"Capstone Investment Advisors, LLC",18,greenhouse,capstoneinvestmentadvisors,Capstone Investment Advisors,1.0,14,high,
+1691,4654,"Cohere Health, Inc.",18,greenhouse,coherehealth,Cohere Health,1.0,75,high,
+1692,4911,"Constant Contact, Inc.",18,greenhouse,constantcontact,Constant Contact,1.0,16,high,
+1706,6577,"EGEN SOLUTIONS, INC.",18,lever,egen,Egen,0.47,22,low,name mismatch
+1709,6925,ENTERPRISE MOBILITY INC,18,recruitee,enterprise,Rent a car - Enterprise,0.56,8,low,name mismatch
+1729,11067,"KELLTON TECH, INC.",18,smartrecruiters,kelltontech,Kellton Tech,1.0,10,high,
+1737,13955,"Notion Labs, Inc.",18,ashby,notion,Notion,0.75,140,low,name mismatch
+1741,14518,"OSI Digital, Inc.",18,greenhouse,osi,OSI Batteries,0.36,2,low,name mismatch; generic or short slug
+1752,17494,"Sezzle, Inc.",18,greenhouse,sezzle,Sezzle,1.0,257,high,
+1755,17992,"Snorkel AI, Inc.",18,greenhouse,snorkelai,Snorkel AI,1.0,45,high,
+1765,20541,Tubi Inc.,18,greenhouse,tubi,Archrival Agents | Tubi,0.35,1,low,name mismatch
+1768,22141,X.AI Corp.,18,greenhouse,xai,SpaceXSI,0.36,297,low,name mismatch; generic or short slug
+1783,119280,Symphony Corporation,18,greenhouse,symphony,Symphony Communication Services,0.43,18,low,name mismatch
+1792,1700,Arcus Technologies,17,recruitee,arcus,ARCUS Planung + Beratung Bauplanungsgesellschaft mbH,0.29,20,low,name mismatch; rejected before (ats_slug_review.csv)
+1806,4627,Cognitiv Corp,17,greenhouse,cognitiv,Cognitiv,1.0,8,high,
+1819,7078,ESOLVIT INC.,17,smartrecruiters,esolvitinc,Esolvit Inc,1.0,136,high,
+1825,7797,FOCUS CORE INC,17,ashby,focus,Focus,0.71,5,low,name mismatch
+1830,8140,GALAXY DIGITAL SERVICES LLC,17,greenhouse,galaxy,Galaxy Integrated Technologies ,0.45,3,low,name mismatch
+1841,10241,Integrated Resources Inc,17,smartrecruiters,integratedresourcesinc,Integrated Resources INC,1.0,2463,high,
+1856,12758,Microchip Technology Inc.,17,smartrecruiters,microchip,Microchip,0.64,9,low,name mismatch
+1860,12952,"MobilityWare, Inc.",17,greenhouse,mobilityware,MobilityWare,1.0,6,high,
+1867,13804,NIKTOR LLC,17,smartrecruiters,niktor,Niktor,1.0,5,high,
+1869,13987,NOVO PROSO INC,17,ashby,novo,Novo,0.62,6,low,name mismatch
+1874,14752,PARKER HANNIFIN CORPORATION,17,ashby,parker,Parker Group Inc,0.6,13,low,name mismatch
+1892,18617,StepStone Group LP,17,greenhouse,stepstone,StepStone Group,1.0,55,high,
+1898,19184,"Tanius Technology, LLC.",17,greenhouse,tanius,Tanius Technology,1.0,8,high,
+1899,19247,TBC Corporation,17,ashby,tbc,The Biological Computing Co.,0.09,3,low,name mismatch; generic or short slug
+1906,19871,The New York Times Company,17,greenhouse,thenewyorktimes,The New York Times,1.0,147,high,
+1911,21114,Veeva Systems Inc.,17,lever,veeva,,0.0,918,low,no board name
+1913,21457,Vitesse Group Inc,17,ashby,vitesse,Vitesse,1.0,5,high,
+1926,109481,PRELUDE SYSTEMS INC.,17,ashby,prelude,Prelude,0.67,14,low,name mismatch
+1927,110907,"Red Bull North America, Inc.",17,smartrecruiters,redbull,Red Bull,0.54,1254,low,name mismatch
+1929,114175,SAS Info Inc,17,greenhouse,sas,Superior Alarm Systems,0.22,3,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+1935,266,Abnormal Security Corporation,16,greenhouse,abnormalsecurity,Abnormal,0.67,86,low,name mismatch
+1941,658,"Age of Learning, Inc.",16,greenhouse,ageoflearninginc,"Age of Learning, Inc.",1.0,8,high,
+1951,2698,Beyond Finance LLC,16,greenhouse,beyondfinance,Beyond Finance,1.0,25,high,
+1965,5124,"Coursera, Inc.",16,greenhouse,coursera,Coursera,1.0,31,high,
+1971,5977,"DIDI USA, INC.",16,greenhouse,didi,DiDi Labs,0.67,9,low,name mismatch
+1979,7196,"EverQuote, Inc",16,greenhouse,everquote,EverQuote,1.0,13,high,
+1984,7808,"Folio Financial, Inc.",16,ashby,folio,Folio,0.53,5,low,name mismatch
+1988,8998,"Happy Money, Inc.",16,greenhouse,happymoney,Happy Money,1.0,7,high,
+1989,9007,HARBOR HAT INC,16,ashby,harbor,Harbor,0.8,5,low,name mismatch; generic or short slug
+2008,13770,NGA GROUP INC,16,smartrecruiters,ngagroupinc,NGA Group Inc,1.0,6,high,
+2032,18033,SOFTPATH SYSTEM LLC,16,smartrecruiters,softpathsystemllc,Softpath System LLC,1.0,28,high,
+2036,18424,SRI Software Solutions LLC,16,recruitee,sri,SRI Rechtsanwaltsgesellschaft mbH,0.24,8,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2039,18971,SYDATA INC.,16,smartrecruiters,sydata,sydata,1.0,10,high,
+2051,20443,TRIPACTIONS INC.,16,greenhouse,tripactions,Navan,0.25,222,low,name mismatch
+2053,20539,"TTI, Inc.",16,greenhouse,ttiinc,"TTI, Inc",1.0,1,high,
+2055,20646,"Udemy, Inc.",16,greenhouse,udemy,Udemy,1.0,3,high,
+2064,22482,Zillion Technologies Inc.,16,smartrecruiters,zilliontechnologiesinc,"ZILLION TECHNOLOGIES, INC",1.0,9,high,
+2081,243,ABC Supply Corporation Inc.,15,greenhouse,abc,ThoughtWorks_new,0.08,24,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2086,1006,Allied Stone Inc.,15,greenhouse,allied,Allied Mechanical,0.52,1,low,name mismatch
+2090,1527,Apex-2000 Inc,15,greenhouse,apex,Apex Eye,0.53,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2094,2389,Baidu USA LLC,15,greenhouse,baidu,Baidu USA,1.0,28,high,
+2097,3051,Bold North America LLC,15,greenhouse,bold,Bold Careers,0.4,1,low,name mismatch
+2099,3342,Brunswick Corporation,15,ashby,brunswick,Sevaro - Physician/Clinical Roles,0.22,6,low,name mismatch
+2101,3964,Centraprise Corp,15,smartrecruiters,centraprise,Centraprise,1.0,7,high,
+2110,6081,"Disqo, Inc.",15,lever,disqo,DISQO,1.0,5,high,
+2120,7241,"EXA DATA SOLUTIONS, INC.",15,ashby,exa,Exa,0.32,57,low,name mismatch; generic or short slug
+2137,10067,Ingenious Heads LLC,15,greenhouse,ingenious,INGENIOUS.BUILD,0.71,1,low,name mismatch
+2142,11024,KAYAK Software Corporation,15,greenhouse,kayak,KAYAK,0.56,1,low,name mismatch
+2151,13321,"Nasdaq, Inc.",15,greenhouse,nasdaq,Nasdaq,1.0,1,high,
+2152,13325,"Natera, Inc.",15,greenhouse,natera,Natera,1.0,225,high,
+2157,13619,"New Era Technology, Inc.",15,greenhouse,neweratechnology,New Era Tech,0.77,1,low,name mismatch
+2183,17367,SEER SOLUTIONS INC,15,greenhouse,seer,Seer Inc.,0.47,3,low,name mismatch
+2192,17950,SMARTSHEET INC.,15,greenhouse,smartsheet,Smartsheet,1.0,89,high,
+2195,18247,SPAR INFORMATION SYSTEMS LLC,15,smartrecruiters,sparinformationsystems,SPAR INFORMATION SYSTEMS,1.0,12,high,
+2207,20674,"ULTIMATE FITNESS GROUP, LLC",15,greenhouse,ultimate,"Ultimate Heating & Air, Inc",0.61,9,low,name mismatch
+2210,21011,Valkyrie Trading,15,lever,valkyrietrading,Valkyrie Trading,1.0,6,high,
+2217,21659,Walkwater Technologies Inc,15,smartrecruiters,walkwatertechnologiesinc,WalkWater Technologies Inc,1.0,12,high,
+2221,22535,"Zscaler, Inc.",15,greenhouse,zscaler,Zscaler,1.0,352,high,
+2269,4122,"Cherre, Inc.",14,lever,cherre,Cherre,1.0,1,high,
+2271,4297,City of Philadelphia,14,smartrecruiters,cityofphiladelphia,City of Philadelphia,1.0,64,high,
+2276,5226,"Cricut, Inc.",14,smartrecruiters,cricut,Cricut,1.0,47,high,
+2280,5500,D.A. Davidson & Co.,14,lever,dadavidson,D.A. Davidson,1.0,61,high,
+2291,6886,"Enova Financial Holdings, LLC",14,greenhouse,enova,Enova International,0.69,39,low,name mismatch
+2292,6921,"ENTERPRISE BUSINESS SOLUTIONS, INC",14,recruitee,enterprise,Rent a car - Enterprise,0.44,8,low,name mismatch
+2296,7474,"Feedzai, Inc.",14,greenhouse,feedzai,Feedzai,1.0,20,high,
+2301,8270,"General Mills, Inc.",14,greenhouse,general,General Interest ,0.67,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2302,8287,Genesis Corp,14,lever,genesis,Genesis Global,0.7,1,low,name mismatch
+2310,9480,"Horizon Therapeutics USA, Inc.",14,lever,horizon,Horizon Robotics,0.71,1,low,name mismatch; generic or short slug; slug already in ats_sources
+2316,9921,"INDIGO AG, INC.",14,greenhouse,indigo,Indigo,0.86,2,low,name mismatch; slug already in ats_sources
+2320,10164,INSIGHT INTELLI INC,14,greenhouse,insight,Insight,0.67,10,low,name mismatch
+2326,11130,KEYSTONE TECHNOLOGY PARTNERS INC,14,greenhouse,keystone,Keystone,0.47,23,low,name mismatch; generic or short slug
+2329,11584,"Lendbuzz, Inc.",14,lever,lendbuzz,Lendbuzz,1.0,55,high,
+2348,13712,Next Gen Software Solutions LLC,14,smartrecruiters,nextgen,NextGen,0.45,8,low,name mismatch; slug already in ats_sources
+2349,13754,"NEXUS INNOVATE, LLC.",14,greenhouse,nexus,CGS Nexus,0.48,2,low,name mismatch
+2364,16315,Redwood Research Group Inc.,14,ashby,redwoodresearch,Redwood Research,1.0,1,high,
+2367,16495,"Resultant, LLC",14,smartrecruiters,resultant,Resultant,1.0,8,high,
+2371,17769,Singular Analysts Inc,14,ashby,singular,Singular,0.67,16,low,name mismatch
+2375,19132,"Take-Two Interactive Software, Inc.",14,greenhouse,taketwo,"Take-Two Interactive Software, Inc.",1.0,36,high,
+2395,22331,"Yotta Systems, Inc.",14,ashby,yotta,Yotta Labs,0.57,4,low,name mismatch; slug already in ats_sources
+2407,85722,"Essential Technologies, Inc",14,greenhouse,essential,Essential Anesthesia Management,0.48,86,low,name mismatch
+2429,318,"Accion Labs US, Inc.",13,smartrecruiters,accionlabs,Accion Labs,1.0,146,high,
+2443,1305,AMG TECHNOLOGY,13,smartrecruiters,amgtechnology,AMG TECHNOLOGY,1.0,6,high,
+2453,2321,AXLE IT INC.,13,greenhouse,axle,Axle,0.8,38,low,name mismatch; slug already in ats_sources
+2481,6512,"Edelman Financial Engines, LLC",13,greenhouse,edelmanfinancialenginesllc,"Edelman Financial Engines, LLC",1.0,41,high,
+2497,8702,GRAND SUPERCENTER INC.,13,lever,grand,Grand Games,0.46,8,low,name mismatch
+2533,13346,National Financial Services LLC,13,greenhouse,national,NATIONAL,0.48,2,low,name mismatch; generic or short slug; slug already in ats_sources
+2538,13805,NIKTOR IT INC,13,smartrecruiters,niktor,Niktor,0.86,5,low,name mismatch
+2543,14229,"Oliver Wyman, LLC",13,lever,oliverwyman,Oliver Wyman Labs,0.85,2,low,name mismatch
+2551,15139,"Pindrop Security, Inc.",13,greenhouse,pindropsecurity,Pindrop,0.64,24,low,name mismatch
+2552,15377,Poshmark Inc.,13,ashby,poshmark,Poshmark,1.0,31,high,
+2554,15568,Prism IT Corp,13,ashby,prism,PRISM,0.83,2,low,name mismatch
+2558,15951,"QUANTUM SYSTEMS GROUP, INC.",13,ashby,quantum,Quantum,0.67,16,low,name mismatch; generic or short slug; slug already in ats_sources
+2562,16401,"Remote Tiger, Inc.",13,greenhouse,remote,General Assembly Remote Jobs ,0.38,2,low,name mismatch
+2563,16610,"Ripple Labs, Inc.",13,greenhouse,ripple,Ripple ,0.75,99,low,name mismatch
+2582,18426,"Sri Technologies, Inc.",13,recruitee,sri,SRI Rechtsanwaltsgesellschaft mbH,0.48,8,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2584,18545,"Starr Insurance Holdings, Inc.",13,recruitee,starr,Starr Bus Charters & Tours,0.46,5,low,name mismatch
+2586,18716,"StubHub, Inc.",13,greenhouse,stubhubinc,StubHub,1.0,34,high,
+2587,18947,"Swire Pacific Holdings, Inc.",13,recruitee,swire,Swire,0.59,32,low,name mismatch
+2592,19405,Technology Square inc,13,greenhouse,technology,Relai ,0.19,1,low,name mismatch; rejected before (ats_slug_review.csv)
+2596,20165,"Toast, Inc.",13,greenhouse,toast,Toast,1.0,322,high,
+2633,85594,EQUI-TEK LLC.,13,ashby,equi,Equi,0.73,3,low,name mismatch
+2642,99528,LMR Partners LLC,13,greenhouse,lmr,Long Meadow Ranch and Farmstead,0.4,8,low,name mismatch; generic or short slug
+2648,108131,"Palmetto GBA, LLC",13,greenhouse,palmetto,Palmetto Animal Hospital,0.55,1,low,name mismatch
+2651,110674,RAPS Consulting Inc,13,smartrecruiters,rapsconsultinginc,RAPS Consulting Inc.,1.0,9,high,
+2657,128556,YES TECHNOLOGIES LLC,13,greenhouse,yes,Yes LLC,0.33,4,low,name mismatch; generic or short slug
+2666,1522,Apex Logistics International Inc.,12,greenhouse,apex,Apex Eye,0.3,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+2667,1566,AppFolio Inc.,12,ashby,appfolio,AppFolio Inc,1.0,35,high,
+2669,1673,"ARCH CAPITAL SERVICES, LLC",12,ashby,arch,Arch,0.35,6,low,name mismatch
+2672,2212,Avani Systems Inc,12,greenhouse,avani,Avani Media,0.55,1,low,name mismatch
+2686,3174,Brain Corporation,12,recruitee,brain,,0.0,7,low,no board name
+2690,3886,"Celerion, Inc.",12,lever,celerion,Celerion,1.0,33,high,
+2699,4332,Clarity Solutions Group LLC,12,ashby,clarity,Clarity,0.61,4,low,name mismatch
+2705,4592,Codex Corp.,12,ashby,codex,Codex,1.0,5,high,
+2710,4944,Continental Casualty Company,12,smartrecruiters,continental,Continental,0.73,572,low,name mismatch; slug already in ats_sources
+2721,5978,"DIDI RESEARCH AMERICA, LLC",12,greenhouse,didi,DiDi Labs,0.37,9,low,name mismatch
+2737,7419,Farm Credit Bank of Texas,12,greenhouse,farmcreditbankoftexas,Farm Credit Bank of Texas,1.0,10,high,
+2742,7605,"Fireworks.ai, Inc.",12,ashby,fireworks,Fireworks,0.9,92,low,name mismatch
+2748,8284,Generic Solutions Inc.,12,smartrecruiters,genericsolutionsinc,Generic Solutions Inc,1.0,5,high,
+2773,11005,Kaseya US LLC,12,greenhouse,kaseya,Kaseya Careers,1.0,103,high,
+2776,11129,Keystone Strategy LLC,12,greenhouse,keystone,Keystone,0.67,23,low,name mismatch; generic or short slug
+2779,11256,"Koddi, Inc.",12,greenhouse,koddi,Koddi,1.0,10,high,
+2781,11327,"Kroll Bond Rating Agency, Inc.",12,greenhouse,krollbondratingagency,KBRA,0.32,56,low,name mismatch
+2788,12264,MarketAxess Corporation,12,greenhouse,marketaxesscorporation,MarketAxess,1.0,5,high,
+2789,12405,"Maxima Consulting, Inc.",12,ashby,maxima,Maxima,0.55,17,low,name mismatch
+2801,13737,"NEXTGEN TECHNOLOGIES, INC",12,smartrecruiters,nextgen,NextGen,0.54,8,low,name mismatch; slug already in ats_sources
+2802,13748,"NextRoll, Inc.",12,greenhouse,nextroll,NextRoll,1.0,4,high,
+2818,15663,"Prolific Technologies, Inc.",12,greenhouse,prolific,Prolific ,0.57,31,low,name mismatch
+2824,16393,"Remedy Analytics, Inc.",12,greenhouse,remedy,Remedy,0.57,12,low,name mismatch
+2826,16571,"Rhombus Power, Inc.",12,greenhouse,rhombuspower,"Rhombus Power, Inc.",1.0,14,high,
+2838,18259,Sparksoft Corporation,12,greenhouse,sparksoftcorporation,Sparksoft Corporation,1.0,27,high,
+2845,18861,SUPPLYHOUSE LLC,12,greenhouse,supplyhouse,SupplyHouse.com,0.88,30,low,name mismatch
+2846,19003,"SYNAPTEIN SOLUTIONS, INC.",12,smartrecruiters,synapteinsolutionsinc,Synaptein Solutions inc,1.0,10,high,
+2855,20009,Thinking Machines Lab Inc.,12,ashby,thinkingmachines,Thinking Machines Lab,1.0,52,high,
+2858,20136,"Titan Data Group, Inc.",12,ashby,titan,Titan,0.71,11,low,name mismatch; generic or short slug
+2876,21940,"Wilshire Advisors, LLC",12,smartrecruiters,wilshireadvisorsllc,Wilshire Advisors LLC,1.0,16,high,
+2878,22460,ZETA GLOBAL CORP.,12,lever,zeta,Zeta,0.57,27,low,name mismatch
+2885,73850,Axon US Corp,12,greenhouse,axon,Axon,1.0,479,low,slug already in ats_sources
+2891,86014,Excel Associates LLC,12,greenhouse,excel,Excel Learning Center,0.53,37,low,name mismatch
+2902,98834,"LATITUDE 36, INC.",12,greenhouse,latitude,Latitude AI,0.8,34,low,name mismatch
+2905,103998,National Consulting Group Inc,12,greenhouse,national,NATIONAL,0.62,2,low,name mismatch; generic or short slug; slug already in ats_sources
+2906,104454,NEW LAND CAPITAL LLC,12,greenhouse,new,Sonja Inc.  ,0.21,1,low,name mismatch; generic or short slug
+2918,124195,United States Steel Corporation,12,greenhouse,unitedstates,capSpire - US,0.16,4,low,name mismatch
+2922,221,"Abacus.AI, Inc.",11,greenhouse,abacus,ABACUS,0.86,46,low,name mismatch
+2935,1744,"ARK SOLUTIONS, INC.",11,greenhouse,ark,Ark Veterinary Hospital & Urgent Care,0.33,4,low,name mismatch; generic or short slug
+2940,2063,Atlas Systems Inc.,11,ashby,atlas,Atlas,0.59,2,low,name mismatch; generic or short slug
+2949,3150,"Box, Inc.",11,greenhouse,boxinc,Box,1.0,117,high,
+2963,4265,CITCON USA LLC,11,lever,citcon,,0.0,2,low,no board name
+2976,4946,"Continental Exchange Solutions, Inc.",11,smartrecruiters,continental,Continental,0.56,572,low,name mismatch; slug already in ats_sources
+2980,5217,Cresta Intelligence Inc.,11,greenhouse,cresta,Cresta,0.5,87,low,name mismatch
+2999,6721,"Elsevier, Inc.",11,greenhouse,elsevier,Elsevier,1.0,7,high,
+3001,6982,"Epic Games, Inc.",11,greenhouse,epicgames,Epic Games,1.0,151,high,
+3011,8154,Gallega Software Solutions Inc,11,smartrecruiters,gallegasoftwaresolutionsinc,Gallega Software Solutions Inc,1.0,9,high,
+3019,9175,"HealthVerity, Inc.",11,greenhouse,healthverity,HealthVerity,1.0,19,high,
+3026,9784,"iHealth Labs, Inc.",11,smartrecruiters,ihealthlabs,iHealth Labs,1.0,10,high,
+3034,10282,"Intelligrated Services, LLC",11,smartrecruiters,intelligrated,Intelligrated,0.76,70,low,name mismatch
+3044,10987,Kargo Global LLC,11,greenhouse,kargo,Kargo,0.62,12,low,name mismatch
+3046,11246,"Koch Business Solutions, LP.",11,greenhouse,koch,Koch Mechanical,0.34,1,low,name mismatch
+3054,11963,"LTS ASSOCIATE, INC.",11,greenhouse,lts,LTS,0.4,14,low,name mismatch; generic or short slug
+3059,12625,"Mercury Insurance Services, LLC",11,greenhouse,mercury,Mercury,0.45,77,low,name mismatch
+3061,12702,"MetLife Group, Inc.",11,lever,metlife,,0.0,39,low,no board name
+3075,13363,NATIONAL MENTOR LLC,11,greenhouse,national,NATIONAL,0.73,2,low,name mismatch; generic or short slug; slug already in ats_sources
+3079,13837,NITYA SOFTWARE SOLUTIONS INC,11,smartrecruiters,nityasoftwaresolutionsinc,"Nitya Software Solutions,Inc",1.0,5,high,
+3089,15056,"phData, Inc.",11,greenhouse,phdata,phData,1.0,47,high,
+3108,16407,Renesas Electronics America Inc.,11,smartrecruiters,renesaselectronics,Renesas Electronics,0.84,949,low,name mismatch
+3110,16800,RPA TECHNOLOGIES LLC,11,greenhouse,rpa,RPA,0.33,3,low,name mismatch; generic or short slug; slug already in ats_sources
+3111,16880,"RxSense Holdings, LLC",11,greenhouse,rxsense,RxSense,1.0,4,high,
+3158,20536,"TTEC DIGITAL, LLC",11,lever,ttecdigital,TTEC Digital,1.0,61,high,
+3164,20898,"Upwork, Inc.",11,greenhouse,upwork,Upwork,1.0,7,high,
+3167,21081,"VaynerMedia, LLC",11,greenhouse,vaynermedia,VaynerMedia LLC,1.0,101,high,
+3171,21303,"VideoAmp, Inc.",11,greenhouse,videoamp,VideoAmp Careers Website ,0.7,1,low,name mismatch
+3175,21736,Wealthfront Corporation,11,lever,wealthfront,Wealthfront,1.0,22,high,
+3197,89421,"Generate Capital, Inc.",11,ashby,generate,Generate,0.7,19,low,name mismatch
+3199,93302,Horizon International Trd. Inc.,11,lever,horizon,Horizon Robotics,0.53,1,low,name mismatch; generic or short slug; slug already in ats_sources
+3208,105859,"OpenGov, Inc.",11,ashby,opengov,OpenGov,1.0,80,high,
+3212,110517,"Radiant Innovative, Inc",11,ashby,radiant,Radiant,0.58,39,low,name mismatch
+3217,118566,Sterling Jewelers Inc.,11,greenhouse,sterling,Sterling Brands,0.67,2,low,name mismatch
+3255,2822,BIS Consulting Inc.,10,lever,bis,BIS Safety Software,0.33,5,low,name mismatch; generic or short slug
+3263,3214,"Braze, Inc.",10,greenhouse,braze,Braze,1.0,337,high,
+3268,3527,"CALIFORNIA CREATIVE SOLUTIONS,INC.",10,smartrecruiters,californiacreativesolutionsinc,California Creative Solutions Inc.,1.0,17,low,slug already in ats_sources
+3280,4521,"CLOVER HEALTH LABS, LLC.",10,greenhouse,cloverhealth,Clover Health,0.86,59,low,name mismatch
+3283,4551,"Coalition, Inc.",10,greenhouse,coalition,"Coalition, Inc.",1.0,50,high,
+3294,5186,Creatify Lab Inc.,10,ashby,creatify,Creatify Lab Inc,1.0,7,high,
+3316,6691,"ELITE SOLUTIONS, INC.",10,greenhouse,elite,"Elite Physical Therapy, Inc. ",0.47,10,low,name mismatch
+3334,8037,"Fulcrum Digital, Inc.",10,smartrecruiters,fulcrumdigital,Fulcrum Digital,1.0,6,high,
+3335,8131,Gain Theory LLC,10,greenhouse,gaintheory,Gain Theory,1.0,2,high,
+3342,8788,"Grey Matter Solutions, LLC",10,greenhouse,grey,GREY ,0.35,19,low,name mismatch; slug already in ats_sources
+3349,9271,HeyGen Technology Inc.,10,greenhouse,heygen,HeyGen,0.55,20,low,name mismatch
+3361,10077,"Inherent Technologies, LLC",10,ashby,inherent,Inherent,0.57,6,low,name mismatch
+3369,10889,Jumio Corporation,10,greenhouse,jumio,Jumio,1.0,17,high,
+3370,10905,JustAnswer LLC,10,greenhouse,justanswer,Pearl,0.27,12,low,name mismatch
+3371,10909,"Juul Labs, Inc.",10,greenhouse,juullabs,Juul Labs,1.0,10,high,
+3378,11467,"Lark Technologies, Inc.",10,ashby,lark,Lark Health,0.46,1,low,name mismatch
+3382,12104,Maganti IT Resources LLC,10,smartrecruiters,magantiitresourcesllc,Maganti IT Resources LLC,1.0,93,high,
+3397,13353,"National Government Services, Inc.",10,greenhouse,national,NATIONAL,0.47,2,low,name mismatch; generic or short slug; slug already in ats_sources
+3399,13752,"Nexus AI Solutions Inc.,",10,greenhouse,nexus,CGS Nexus,0.42,2,low,name mismatch
+3402,13983,"Novo Nordisk, Inc.",10,ashby,novo,Novo,0.53,6,low,name mismatch
+3405,14163,"Octane Lending, Inc.",10,greenhouse,octanelending,Octane,0.63,11,low,name mismatch
+3408,14558,Outreach Corporation,10,lever,outreach,Outreach,1.0,23,high,
+3415,15329,Polar Operations LLC,10,ashby,polar,Polar,0.5,2,low,name mismatch
+3419,15684,Propel Solutions Inc.,10,ashby,propel,Propel,0.57,7,low,name mismatch
+3420,15771,PUBLIC PARTNERSHIPS LLC,10,greenhouse,public,Public,0.5,3,low,name mismatch; generic or short slug
+3439,17547,SHEIN Technology LLC,10,greenhouse,shein,SHEIN,0.5,17,low,name mismatch
+3448,17914,"Smart Energy Systems, Inc.",10,lever,smartenergy,Smart Energy Group,0.76,24,low,name mismatch
+3449,17919,SMART IT FRAME LLC,10,smartrecruiters,smartitframellc,Smart IT Frame LLC,1.0,7,high,
+3450,18238,SPACE AUTO GROUP INC.,10,greenhouse,space,Space Programs,0.55,7,low,name mismatch
+3456,18644,StockX LLC,10,greenhouse,stockx,StockX,1.0,32,high,
+3496,20568,"Turner & Townsend, Inc.",10,smartrecruiters,turnertownsend,Turner & Townsend,1.0,3518,high,
+3506,21350,VINGS TECHNOLOGIES LIMITED,10,smartrecruiters,vingstechnologies,Vings Technologies,1.0,10,high,
+3509,21798,"Wellmark, Inc.",10,smartrecruiters,wellmarkinc,"Wellmark, Inc.",1.0,49,high,
+3522,68416,"Abacus Insights, Inc.",10,greenhouse,abacusinsights,Abacus Insights,1.0,17,high,
+3525,70796,"Applied Underwriters, Inc.",10,ashby,applied,Applied Intuition,0.57,328,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv); slug already in ats_sources
+3556,115472,SKY SOLUTIONS LLC,10,smartrecruiters,skysolutionsllc,Sky Solutions LLC.,1.0,7,high,
+3566,125624,WARBURG PINCUS LLC,10,greenhouse,warburgpincusllc,Warburg Pincus LLC,1.0,5,high,
+3580,401,"ActiveCampaign, LLC",9,lever,activecampaign,ActiveCampaign,1.0,12,high,
+3583,538,ADVANCY INC.,9,recruitee,advancy,Advancy Partners,0.64,16,low,name mismatch
+3589,978,"Allegiant Air, LLC",9,lever,allegiantair,Allegiant,0.86,57,low,name mismatch
+3599,1666,Arcadia Solutions LLC,9,lever,arcadia,Arcadia,0.61,19,low,name mismatch
+3600,1677,"ARCH US MI SERVICES, INC",9,ashby,arch,Arch,0.44,6,low,name mismatch
+3615,2945,BLUE OCEAN INC.,9,lever,blue,"BlueCloud Services, Inc.",0.54,9,low,name mismatch; generic or short slug
+3618,3175,"BRAIN TECHNOLOGIES, INC",9,recruitee,brain,Brainsquare,0.43,7,low,name mismatch
+3620,3420,"ButcherBox OpCo, LLC",9,greenhouse,butcherbox,ButcherBox,0.83,9,low,name mismatch
+3626,3624,Capital Blue Cross,9,lever,blue,"BlueCloud Services, Inc.",0.42,9,low,name mismatch; generic or short slug
+3629,3704,"CareDx, Inc.",9,greenhouse,caredxinc,"CareDx, Inc.",1.0,48,high,
+3636,4173,"Chowbus, Inc.",9,greenhouse,chowbus,Chowbus,1.0,82,high,
+3655,5248,Cross River Bank,9,greenhouse,crossriverbank,Cross River,0.83,37,low,name mismatch
+3657,5285,"Crux Informatics, Inc.",9,ashby,crux,Crux AI,0.48,33,low,name mismatch
+3661,5649,"DataLab USA, LLC",9,ashby,datalab,Datalab,1.0,5,high,
+3663,5703,Dave Inc.,9,ashby,dave,Dave,1.0,6,high,
+3673,6786,"Employer Direct Healthcare, LLC",9,greenhouse,employerdirecthealthcare,Lantern,0.19,41,low,name mismatch
+3682,7743,"Flock Freight, Inc.",9,ashby,flock,Flock,0.59,9,low,name mismatch
+3711,9832,IMC Capital Investment LLC,9,greenhouse,imc,IMC,0.26,170,low,name mismatch; generic or short slug
+3714,9968,Infinite Tek Inc,9,ashby,infinite,Infinite,0.84,2,low,name mismatch; slug already in ats_sources
+3726,10648,"IXL Learning, Inc.",9,greenhouse,ixllearning,IXL Learning,1.0,122,high,
+3738,11650,"LG ELECTRONICS U.S.A., INC.",9,greenhouse,lgelectronics,LG Electronics,0.9,122,low,name mismatch; slug already in ats_sources
+3752,12388,Maven Wave Partners LLC,9,ashby,maven,Maven,0.45,3,low,name mismatch; slug already in ats_sources
+3755,12492,"MedeAnalytics, Inc.",9,greenhouse,medeanalytics,MedeAnalytics,1.0,2,high,
+3757,12599,Menzo Technologies Corp,9,smartrecruiters,menzotechnologies,Menzo Technologies,1.0,10,high,
+3763,12842,"MINDBODY, Inc.",9,greenhouse,mindbody,Mindbody,1.0,22,high,
+3770,13352,National General Management Corp,9,greenhouse,national,NATIONAL,0.48,2,low,name mismatch; generic or short slug; slug already in ats_sources
+3779,14045,NUMERIX LLC,9,greenhouse,numerix,Numerix,1.0,7,high,
+3788,14520,"OSI Systems, Inc.",9,greenhouse,osi,OSI Batteries,0.55,2,low,name mismatch; generic or short slug
+3809,15934,Quantifind Inc,9,greenhouse,quantifind,Quantifind,1.0,19,high,
+3826,17130,SANY America Inc.,9,greenhouse,sany,"Sany, An Equipmentshare Company",0.52,3,low,name mismatch
+3828,17279,"Scopely, Inc.",9,greenhouse,scopely,Scopely,1.0,181,high,
+3853,19181,Tango Management Consulting LLC,9,ashby,tango,Tango,0.33,3,low,name mismatch
+3856,19319,"Tech Tammina, LLC",9,smartrecruiters,techtammina,Tech Tammina,1.0,45,high,
+3858,19406,Technology Ventures LLC,9,greenhouse,technology,Relai ,0.17,1,low,name mismatch; rejected before (ats_slug_review.csv)
+3865,19683,Teza Technologies LLC,9,ashby,teza-technologies,Teza Technologies,1.0,10,high,
+3873,20206,"TORC Robotics, Inc.",9,greenhouse,torcrobotics,Torc Robotics,1.0,44,high,
+3887,21313,"VidMob, Inc",9,ashby,vidmob,Vidmob,1.0,2,high,
+3902,21907,"WHOOP, Inc.",9,ashby,whoop,Whoop,1.0,168,high,
+3903,21969,Winsupply Inc,9,smartrecruiters,winsupply,winsupply,1.0,6,high,
+3914,22405,"ZEFR, Inc.",9,ashby,zefr,Zefr,1.0,6,high,
+3925,74930,"Blue Nile, Inc.",9,lever,blue,"BlueCloud Services, Inc.",0.48,9,low,name mismatch; generic or short slug
+3944,93303,Horizon IT Inc,9,lever,horizon,Horizon Robotics,0.67,1,low,name mismatch; generic or short slug; slug already in ats_sources
+3947,94383,"Infosmart Systems, Inc.",9,smartrecruiters,infosmart,InfoSmart,0.72,5,low,name mismatch
+3950,99140,LEVIO CONSULTING INC,9,greenhouse,levio,Levio,0.5,61,low,name mismatch
+3960,104660,Nextgen Solutions Inc,9,smartrecruiters,nextgen,NextGen,0.61,8,low,name mismatch; slug already in ats_sources
+3963,108544,PEI Global Partners Holdings LLC,9,greenhouse,pei,Private Equity Insights (London),0.32,4,low,name mismatch; generic or short slug
+3975,120286,TEKWISSEN LLC.,9,smartrecruiters,tekwissenllc,TEKWISSEN LLC,1.0,7,high,
+3993,376,Acquia Inc.,8,greenhouse,acquia,Acquia,1.0,5,high,
+4003,667,Agero Administrative Service Corp.,8,greenhouse,agero,Agero,0.32,16,low,name mismatch
+4015,1062,AlphaSense Inc.,8,greenhouse,alphasense,AlphaSense,1.0,213,high,
+4035,2096,"Attentive Mobile, Inc.",8,greenhouse,attentive,Attentive,0.75,29,low,name mismatch
+4044,2691,"BetterUp, Inc.",8,ashby,betterup,BetterUp,1.0,8,high,
+4057,3562,"Cambridge Mobile Telematics, Inc.",8,greenhouse,cambridgemobiletelematics,Cambridge Mobile Telematics,1.0,20,high,
+4070,4653,"Cohere US, Inc.",8,ashby,cohere,Cohere,1.0,116,high,
+4072,4681,"COLLECTIVEHEALTH, INC.",8,greenhouse,collectivehealth,Collective Health,1.0,2,high,
+4076,4898,CONQUEST CONSULTING LLC,8,ashby,conquest,Conquest,0.62,3,low,name mismatch
+4097,5696,"Datology AI, Inc.",8,ashby,datologyai,DatologyAI,1.0,14,high,
+4135,7819,Forbes Media LLC,8,greenhouse,forbes,Forbes,0.71,15,low,name mismatch
+4138,7972,Freshworks Inc.,8,smartrecruiters,freshworks,Freshworks,1.0,128,high,
+4141,8249,Gen Digital Inc.,8,ashby,gen-digital,Gen Digital Inc.,1.0,119,high,
+4142,8298,Genesis Research LLC,8,lever,genesis,Genesis Global,0.57,1,low,name mismatch
+4152,8648,"Gotion, Inc.",8,greenhouse,gotion,"Gotion, Inc.",1.0,147,high,
+4160,9016,HARK LABS INC.,8,greenhouse,hark,Hark,0.67,53,low,name mismatch
+4168,9356,"Hiretual Talent Solutions, LLC",8,smartrecruiters,hiretual,Hiretual,0.52,46,low,name mismatch
+4179,9783,"IHC Health Services, Inc.",8,greenhouse,ihc,Integrity Home Care & Hospice ,0.39,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+4180,9828,iManage LLC,8,greenhouse,imanage,iManage,1.0,1,high,
+4205,11247,"Koch Capabilities, LLC",8,greenhouse,koch,Koch Mechanical,0.47,1,low,name mismatch
+4206,11278,"Komodo Health, Inc.",8,greenhouse,komodohealth,Komodo Health,1.0,24,high,
+4210,11400,"Labelbox, Inc.",8,greenhouse,labelbox,Labelbox,1.0,8,high,
+4212,11537,Leap IT Inc,8,ashby,leap,Leap,0.8,24,low,name mismatch
+4217,11804,"LIVEPERSON, INC.",8,greenhouse,liveperson,LivePerson,1.0,4,high,
+4220,12123,"Magnetar Capital, LLC",8,greenhouse,magnetar,Magnetar,0.7,5,low,name mismatch
+4228,12623,Mercury Financial LLC,8,greenhouse,mercury,Mercury,0.61,77,low,name mismatch
+4239,13099,"Motive Technologies, Inc.",8,greenhouse,motive,Motive,0.5,10,low,name mismatch
+4251,13480,Neighborhood Health Plan of Rhode Island,8,smartrecruiters,neighborhoodhealth,Neighborhood Health,0.68,5,low,name mismatch
+4252,13499,NEON IT LLC,8,lever,neon,Neon Pagamentos,0.5,8,low,name mismatch
+4257,14044,NUMERIC TECHNOLOGIES INC,8,ashby,numeric,Numeric,0.54,23,low,name mismatch
+4262,14157,"Ocrolus, Inc.",8,ashby,ocrolus,Ocrolus Inc.,1.0,6,high,
+4269,14382,"OPENX TECHNOLOGIES, INC.",8,lever,openx,OpenX,0.45,9,low,name mismatch
+4272,14576,"Overjet, Inc.",8,ashby,overjet,Overjet,1.0,30,high,
+4279,15005,"Peterson Technology Partners, Inc.",8,recruitee,peterson,Peterson,0.47,19,low,name mismatch
+4289,15704,Prospance Inc,8,smartrecruiters,prospanceinc,Prospanceinc,0.86,6,low,name mismatch
+4297,16264,Rearc LLC,8,ashby,rearc,Rearc,1.0,6,high,
+4302,16417,"RENT THE RUNWAY, INC.",8,greenhouse,renttherunway,Rent the Runway,1.0,27,high,
+4303,16472,"Resonate Networks, Inc.",8,greenhouse,resonate,Resonate,0.67,8,low,name mismatch
+4308,16623,"Rising Tides Solutions, LLC",8,greenhouse,risingtidessolutionsllc,RTS Labs,0.22,4,low,name mismatch
+4316,17223,SCAN Group,8,greenhouse,scangroup,Scangroup,0.62,8,low,name mismatch
+4349,19047,Syntax LLC,8,lever,syntax,Syntax,1.0,1,high,
+4372,20198,"Topaz Labs, LLC",8,lever,topazlabs,Topaz Labs,1.0,5,high,
+4377,20563,Turing Enterprises Inc.,8,greenhouse,turing,Turing,0.52,30,low,name mismatch
+4378,20658,"UIPATH, INC.",8,ashby,uipath,UiPath,1.0,106,high,
+4381,20826,"Universal City Development Partners, Ltd.",8,greenhouse,universal,Universal,0.44,4,low,name mismatch; slug already in ats_sources
+4390,21251,"Vestwell Holdings, Inc.",8,greenhouse,vestwell,Vestwell,1.0,24,high,
+4391,21278,Viant Technology LLC,8,greenhouse,vianttechnology,Viant Technology,1.0,25,high,
+4402,21705,"Watershed Technology, Inc.",8,greenhouse,watershed,Watershed Informatics,0.56,8,low,name mismatch
+4405,21745,"webAI, Inc",8,ashby,webai,webAI,1.0,20,high,
+4410,22112,Wunderman Thompson LLC,8,greenhouse,wundermanthompson,VML,0.1,395,low,name mismatch
+4421,22528,"Zoro Tools, Inc.",8,greenhouse,zoro,Zoro,0.62,17,low,name mismatch
+4427,69920,"Alten Technology USA, Inc.",8,smartrecruiters,alten,ALTEN,0.5,1183,low,name mismatch
+4456,84953,Elite eXceed LLC,8,greenhouse,elite,"Elite Physical Therapy, Inc. ",0.39,10,low,name mismatch
+4461,85893,"Everest Global Solutions, Inc.",8,recruitee,everest,Everest Commerce Group B.V.,0.46,17,low,name mismatch
+4473,90147,Grand BK Corp.,8,lever,grand,Grand Games,0.59,8,low,name mismatch
+4476,94062,"IMPLIFY, INC",8,smartrecruiters,implifyinc,Implify Inc,1.0,162,high,
+4500,105613,OMNI SOURCING INC,8,ashby,omni,Omni,0.5,36,low,name mismatch; slug already in ats_sources
+4504,108015,"PA Consulting Group, Inc.",8,smartrecruiters,paconsulting,PA Consulting,1.0,197,high,
+4516,115208,"Silver Point Capital, LP",8,ashby,silver,Silver.dev,0.44,41,low,name mismatch
+4533,126053,William Blair Investment Management LLC,8,greenhouse,williamblair,William Blair,0.55,52,low,name mismatch
+4543,241,ABBVIE BIOTHERAPEUTICS INC.,7,smartrecruiters,abbvie,AbbVie,0.44,1929,low,name mismatch; slug already in ats_sources
+4545,277,Abt Associates Inc.,7,lever,abt,,0.0,3,low,no board name; generic or short slug
+4546,373,ACORD Solutions Group Inc.,7,lever,acord,ACORD Corporation,0.53,2,low,name mismatch
+4558,957,"AlixPartners, LLP",7,greenhouse,alixpartners,AlixPartners,1.0,127,high,
+4563,1080,"Alt Platform, Inc.",7,ashby,alt,Alt Platform Inc,1.0,20,low,generic or short slug
+4564,1100,"Altman Solon US, LP",7,greenhouse,altmansolonuslp,Altman Solon,1.0,16,high,
+4573,1349,"Amplify Education, Inc.",7,ashby,amplify,Amplify,0.61,34,low,name mismatch
+4574,1350,"Amplitude, Inc.",7,ashby,amplitude,Amplitude,1.0,39,high,
+4579,1585,"Applied Academics, LLC",7,ashby,applied,Applied Intuition,0.5,328,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv); slug already in ats_sources
+4580,1591,"Applied Material, Inc.",7,ashby,applied,Applied Intuition,0.58,328,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv); slug already in ats_sources
+4585,1710,"Arena Technologies, Inc.",7,ashby,arena,"Arena Intelligence, Inc.",0.53,19,low,name mismatch
+4596,1988,Astera Institute,7,ashby,astera,Astera Institute,1.0,42,high,
+4600,2176,AUTOMATION TECHNOLOGIES LLC,7,recruitee,automation,Automation NV,0.65,6,low,name mismatch; rejected before (ats_slug_review.csv)
+4609,2612,Ben Group Inc.,7,ashby,ben,Ben,1.0,6,low,generic or short slug
+4625,3553,"Cambay Consulting, LLC",7,smartrecruiters,cambay,Cambay,0.55,5,low,name mismatch
+4626,3594,CANDID,7,greenhouse,candid,Candid,1.0,12,low,slug already in ats_sources
+4633,4366,"CLEARCAPITAL.COM, INC.",7,lever,clearcapital,Clear Capital | CubiCasa | restb.ai,0.62,5,low,name mismatch
+4634,4413,ClinChoice Inc.,7,greenhouse,clinchoice,ClinChoice,1.0,51,high,
+4642,4585,Coder Logics Inc,7,ashby,coder,Coder,0.62,26,low,name mismatch
+4651,5079,Cortex Management LLC,7,greenhouse,cortex,Cortex,0.55,7,low,name mismatch
+4661,5854,Delta Electronics (Americas) Ltd.,7,smartrecruiters,deltaelectronics,Delta Electronics,0.8,63,low,name mismatch
+4663,5889,Denver Energy Group LLC,7,greenhouse,denver,Animal Health Care Denver,0.35,2,low,name mismatch
+4687,6960,"Envoy Global, Inc.",7,ashby,envoy,Envoy,0.62,22,low,name mismatch; slug already in ats_sources
+4694,7170,EVEREST COMPUTERS INC,7,recruitee,everest,Everest Commerce Group B.V.,0.73,17,low,name mismatch
+4695,7172,Everest DX Inc,7,recruitee,everest,Everest Commerce Group B.V.,0.54,17,low,name mismatch
+4713,7869,"Fortune Brands Innovations Group, Inc.",7,smartrecruiters,fortunebrands,Fortune Brands,0.7,104,low,name mismatch
+4716,8057,"Funding Circle USA, Inc.",7,ashby,fundingcircle,Funding Circle,1.0,22,high,
+4718,8201,"Gauntlet Networks, Inc.",7,lever,gauntlet,Gauntlet,0.67,6,low,name mismatch
+4723,8237,"Gemini Consulting & Services, LLC",7,greenhouse,gemini,Gemini,0.4,30,low,name mismatch
+4729,8645,"Gorgias, Inc.",7,ashby,gorgias,Gorgias,1.0,19,high,
+4730,8698,"Grand Circle, LLC",7,lever,grand,Grand Games,0.57,8,low,name mismatch
+4740,9112,"Headway Technologies, Inc.",7,ashby,headway,Headway,0.54,90,low,name mismatch
+4761,10061,"INFUSE, Inc.",7,greenhouse,infuse,INFUSE,1.0,360,high,
+4763,10080,Injective Labs Inc.,7,ashby,injective,Injective,0.82,11,low,name mismatch
+4769,10418,Invisible Technologies Inc.,7,smartrecruiters,invisibletechnologies,Invisible Technologies,1.0,10,high,
+4776,10699,Jane Street Group LLC,7,greenhouse,janestreet,Jane Street,1.0,220,high,
+4781,11110,KESTRA FINANCIAL INC.,7,ashby,kestra,Kestra Technologies,0.42,5,low,name mismatch
+4783,11234,"KnowBe4, Inc.",7,greenhouse,knowbe4,KnowBe4,1.0,70,high,
+4800,11868,"Logicgate Technologies, Inc.",7,greenhouse,logicgate,LogicGate,0.6,12,low,name mismatch
+4819,12662,Meshy LLC,7,ashby,meshy,Meshy LLC,1.0,21,high,
+4828,13096,Motional AD Inc.,7,greenhouse,motional,Motional,0.89,83,low,name mismatch
+4844,13555,"Netskope, Inc.",7,greenhouse,netskope,Netskope,1.0,128,high,
+4865,14134,"Obsidian Security, Inc.",7,greenhouse,obsidiansecurity,Obsidian Security,1.0,14,high,
+4884,14978,"Perplexity AI, Inc.",7,ashby,perplexity,Perplexity,0.91,131,low,name mismatch
+4888,15142,PineBridge Investments LLC,7,ashby,pinebridge,PineBridge,0.65,9,low,name mismatch
+4891,15254,PlayQ Inc.,7,greenhouse,playq,PlayQ,1.0,2,high,
+4892,15298,POCKET AI LLC,7,ashby,pocket,Open Vision Engineering Inc,0.28,15,low,name mismatch
+4913,16716,"Rocket Lawyer, Inc.",7,greenhouse,rocketlawyer,Rocket Lawyer,1.0,6,high,
+4915,16758,"Roofstock, Inc.",7,greenhouse,roofstock,Roofstock,1.0,8,high,
+4921,16988,"SageSure Capital Holdings, Inc.",7,greenhouse,sagesure,SageSure,0.7,22,low,name mismatch
+4935,17672,"Sigma Computing, Inc.",7,greenhouse,sigmacomputing,Sigma Computing,1.0,77,high,
+4940,17835,Skillz Inc.,7,greenhouse,skillzinc,Skillz Inc,1.0,19,high,
+4944,18059,"Softworld, Inc.",7,lever,softworld,Softworld,1.0,9,high,
+4947,18109,Solstice Consulting LLC,7,ashby,solstice,Solstice,0.62,17,low,name mismatch; slug already in ats_sources
+4950,18190,"SOURCE MANTRA, INC.",7,lever,source,Source,0.67,3,low,name mismatch
+4954,18291,Spectrum Technologies LLC,7,greenhouse,spectrum,Spectrum,0.57,1,low,name mismatch
+4955,18322,SPINS LLC,7,greenhouse,spins,SPINS,1.0,8,high,
+4962,18625,Stevens Capital Management LP,7,smartrecruiters,stevens,Stevens Strategic Communications Inc.,0.41,12,low,name mismatch
+4968,18879,"SurveyMonkey, Inc.",7,ashby,surveymonkey,SurveyMonkey,1.0,20,high,
+4973,19016,Syndigo LLC,7,greenhouse,syndigo,Syndigo,1.0,40,high,
+4975,19048,SYNTAX PRO LLC,7,lever,syntax,Syntax,0.8,1,low,name mismatch
+4977,19212,"TaskRabbit, Inc.",7,greenhouse,taskrabbit,Taskrabbit,1.0,20,high,
+4981,19287,Tec Frames LLC,7,greenhouse,tec,Tidewater Eye Centers,0.36,9,low,name mismatch; generic or short slug
+4997,19653,Tetra Computing LLC,7,greenhouse,tetra,Tetra,0.53,1,low,name mismatch; slug already in ats_sources

@@ -1,0 +1,18 @@
+rank,company_id,company_name,evidence,ats,slug,board_name,name_ratio,n_jobs,confidence,reason
+4,12768,Microsoft Corporation,3337,greenhouse,microsoftcorporation,Microsoft AI,0.9,70,low,name mismatch
+27,1592,"Applied Materials, Inc",466,ashby,applied,Applied Intuition,0.56,329,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv); slug already in ats_sources
+36,20087,"Tiger Analytics, Inc.",403,ashby,tiger,Tiger,0.53,4,low,name mismatch
+73,10220,"Insurance Services Office, Inc.",214,greenhouse,insurance,Alpha FMC - Insurance Consulting,0.44,10,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+77,21845,"Western Digital Technologies, Inc.",200,smartrecruiters,westerndigital,Western Digital,0.7,342,low,name mismatch
+81,14930,"People Tech Group, Inc",192,greenhouse,peopletech,People Tech,1.0,6,high,
+93,17463,"ServiceNow, Inc.",168,smartrecruiters,servicenow,ServiceNow,1.0,714,high,
+99,18386,SPRUCE TECHNOLOGY INC.,161,ashby,spruce,Spruce,0.55,4,low,name mismatch
+108,10491,"Iris Software, Inc.",155,smartrecruiters,irissoftware,IRIS Software,1.0,7,high,
+135,1050,ALPHA NET CONSULTING LLC,129,smartrecruiters,alphanetconsultingllc,Alpha Net Consulting LLC.,1.0,10,high,
+141,793,"AIRBNB, INC.",126,greenhouse,airbnb,Airbnb,1.0,192,high,
+153,7649,"FIRST TEK, INC.",121,smartrecruiters,firsttekinc,"first Tek,Inc",1.0,22,high,
+159,17192,Savvy IT Group Inc,119,ashby,savvy,Savvy,0.83,29,low,name mismatch
+164,1940,ASPIRE SYSTEMS INC,116,smartrecruiters,aspiresystemsinc,"Aspire systems, Inc",1.0,11,high,
+182,8271,General Motors,107,greenhouse,general,General Interest ,0.71,1,low,name mismatch; generic or short slug; rejected before (ats_slug_review.csv)
+187,10392,"Intuitive Surgical Operations, Inc.",104,smartrecruiters,intuitive,Intuitive,0.5,766,low,name mismatch; slug already in ats_sources
+193,20138,Titan Technologies Inc.,101,ashby,titan,Titan,0.45,11,low,name mismatch; generic or short slug
