@@ -34,6 +34,12 @@ The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*
   this gives 3 false positives (Palantir "Year at Palantir" internships that are not USG);
   clearance hits checked by hand: 77/80 correct. Not fixed with a rule written for one
   company's phrasing.
+- Known limitation: `jobs.posted_at` is the ATS's first-publication date, but Lever's public
+  API only gives `createdAt` (when the posting was created in Lever), which can be earlier
+  than when it went public; Workday's list API has no date (only "Posted 30+ Days Ago"), so
+  Workday postings get one only from the detail page. Greenhouse uses `first_published`,
+  never `updated_at` (last edit). Freshness and the time window use
+  COALESCE(posted_at, first_seen_at).
 - No LLM calls in these 3 days: keywords and regex only.
 - Code, comments, SQL comments and logs in English.
 

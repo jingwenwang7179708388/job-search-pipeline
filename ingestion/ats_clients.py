@@ -57,8 +57,9 @@ def fetch_greenhouse(slug):
         "title": j.get("title", ""),
         "location": (j.get("location") or {}).get("name", ""),
         "url": j.get("absolute_url", ""),
-        # updated_at is the last edit time, so prefer first_published
-        "posted": (j.get("first_published") or j.get("updated_at") or "")[:10],
+        # first_published is the first publication date; updated_at is only the last edit
+        # time, so it is never used as a posting date
+        "posted": (j.get("first_published") or "")[:10],
         "desc": strip_html(j.get("content", "")),
     } for j in r.json().get("jobs", [])]
 
@@ -71,6 +72,8 @@ def fetch_lever(slug):
     for j in r.json():
         cat = j.get("categories") or {}
         ts = j.get("createdAt")
+        # createdAt is when the posting was created (the public API has no separate
+        # publish date); it is the closest available first-posted date
         posted = (datetime.fromtimestamp(ts / 1000, timezone.utc).strftime("%Y-%m-%d")
                   if ts else "")
         out.append({

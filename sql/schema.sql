@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     content_hash      CHAR(64) NOT NULL,                -- SHA-256(title + location + JD)
     status            ENUM('active','closed') NOT NULL DEFAULT 'active',
     first_seen_at     DATETIME NOT NULL,                -- written on first insert only, never updated
+    posted_at         DATE,                             -- first-publication date from the ATS (NULL when it gives none); not in content_hash
     last_seen_at      DATETIME NOT NULL,
     content_updated_at DATETIME,                        -- when the content (content_hash) last changed
     closed_at         DATETIME,

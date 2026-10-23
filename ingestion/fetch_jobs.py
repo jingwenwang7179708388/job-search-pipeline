@@ -7,6 +7,9 @@ Per source, one ingestion_runs row, and these rules:
     first_seen_at = last_seen_at = run time, status = active, processing_status = pending.
   - Existing posting: last_seen_at = run time, missing_run_count = 0 (first_seen_at is never
     touched). A closed posting that reappears is reopened (status active, closed_at NULL).
+  - posted_at = the ATS's first-publication date (NULL when it gives none). It is not part
+    of content_hash: an existing job whose posted_at is NULL gets it filled in, an existing
+    value is never overwritten, and neither changes the job's update / processing status.
   - content_hash = SHA-256 of cleaned title + location + JD (HTML, extra whitespace and dates
     removed). A changed hash updates the content, sets content_updated_at and puts the job
     back to processing_status = pending.
@@ -57,6 +60,12 @@ def clean_for_hash(text):
     text = re.sub(r"<[^>]+>", " ", text or "")       # fetchers strip HTML already; be safe
     text = _DATE_RE.sub(" ", text.lower())
     return re.sub(r"\s+", " ", text).strip()
+
+
+def posted_date(job):
+    """The fetcher's "posted" as YYYY-MM-DD, or None when missing / not a date."""
+    s = (job.get("posted") or "")[:10]
+    return s if re.fullmatch(r"\d{4}-\d{2}-\d{2}", s) else None
 
 
 def content_hash(job):
@@ -137,14 +146,17 @@ def _apply(conn, cur, run_id, now, source_id, company_id, fetched):
             cur.execute(
                 "INSERT INTO jobs (company_id, ats_source_id, external_job_id, title, "
                 "description_text, location_text, job_url, content_hash, status, first_seen_at, "
-                "last_seen_at, content_updated_at, missing_run_count, processing_status) "
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'active', %s, %s, %s, 0, 'pending')",
-                (company_id, source_id, ext, title, j["desc"], loc, url, h, now, now, now))
+                "posted_at, last_seen_at, content_updated_at, missing_run_count, processing_status) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'active', %s, %s, %s, %s, 0, 'pending')",
+                (company_id, source_id, ext, title, j["desc"], loc, url, h, now, posted_date(j),
+                 now, now))
             n_new += 1
             continue
         job_id, old_hash, status = existing[ext]
+        # posted_at: fill only when still NULL; not part of content_hash
         cur.execute("UPDATE jobs SET last_seen_at = %s, missing_run_count = 0, "
-                    "status = 'active', closed_at = NULL WHERE job_id = %s", (now, job_id))
+                    "status = 'active', closed_at = NULL, posted_at = COALESCE(posted_at, %s) "
+                    "WHERE job_id = %s", (now, posted_date(j), job_id))
         n_reopened += status == "closed"
         if h != old_hash:
             cur.execute("UPDATE jobs SET title = %s, description_text = %s, location_text = %s, "
