@@ -19,7 +19,8 @@ update its **Progress** section after finishing each step. Direction comes from
 
 ```
 common/          db.py (get_conn() from .env), names.py (clean_name, normalize, BODYSHOPS, TITLE_SKIP)
-lca/             process_lca.py - LCA xlsx -> parquet cache -> companies, company_role_evidence
+lca/             process_lca.py - LCA xlsx -> parquet cache -> companies, company_role_evidence;
+                 flag_staffing.py -> companies.likely_staffing
 mapping/         resolve_slugs.py, resolve_workday.py - find each company's ATS slug (still used);
                  ats_slug_review.csv (hand-checked slugs) + load_ats_sources.py -> ats_sources
 ingestion/       ats_clients.py (fetchers copied from legacy/job_feed.py), fetch_jobs.py -> jobs,
@@ -61,6 +62,7 @@ to `sys.path` itself and builds file paths from `Path(__file__)`, not the workin
 ```
 python3 -m pip install -r requirements.txt
 python3 lca/process_lca.py                          # first run reads 25 xlsx (~10 min), then cached
+python3 lca/flag_staffing.py                        # likely_staffing (own xlsx cache, ~10 min first run)
 python3 mapping/resolve_slugs.py data/companies_new.csv   # only when the company list grows
 python3 mapping/resolve_workday.py 200
 python3 mapping/load_ats_sources.py                 # data/companies.csv + review -> ats_sources

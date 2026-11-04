@@ -4,9 +4,10 @@ mapping/resolve_slugs_db.py - guess ATS slugs for companies in MySQL that have n
 
 Candidates: companies not in ats_sources, ranked by the sum of non_senior_filing_count over their
 non-SOFTWARE_ENGINEERING Tracks (companies that only sponsor SWE are not added; see docs/PLAN.md),
-minus IT staffing / outsourcing names matched by STAFFING (here only: common/names.py BODYSHOPS
-is not changed, since that would change the LCA evidence and the frozen Track experiments).
-Ranks are counted after that exclusion.
+minus companies with likely_staffing (lca/flag_staffing.py) and IT staffing / outsourcing names
+matched by STAFFING (here only: common/names.py BODYSHOPS is not changed, since that would
+change the LCA evidence and the frozen Track experiments). Ranks are counted after those
+exclusions, so they shift as companies get an ats_sources row; --skip-ids pins what was probed.
 Slug guesses (candidates()) and the job-count probes for Greenhouse, Lever, Ashby,
 SmartRecruiters, Recruitee and Workable are reused from mapping/resolve_slugs.py (Workday is not
 probed). The first slug x platform with enough open postings is the hit (SmartRecruiters and
@@ -30,7 +31,9 @@ Usage (from the project root):
       (a fixed-seed random sample of 200 from candidate ranks 1,000-5,000)
   python3 mapping/resolve_slugs_db.py --limit 5000 --skip-ids probed.txt --merge a.csv b.csv --out ...
       (companies listed in probed.txt are not probed again; their hits are taken from the merged
-      CSVs, re-judged and re-ranked)
+      CSVs, re-judged and re-ranked; --sample draws from the companies left after the skip)
+  python3 mapping/resolve_slugs_db.py --limit 100000 --min-evidence 2 --skip-ids probed.txt ...
+      (only candidates with >= 2 non-senior non-SWE filings)
   python3 mapping/resolve_slugs_db.py --load-csv experiments/slug_candidates_top5000.csv
       load a hits CSV into ats_sources: high -> is_active TRUE, low -> FALSE, discovered_by
       'resolve_slugs_db'; skipped: slugs already in ats_sources, slugs rejected before, and a
@@ -159,15 +162,15 @@ def judge(hit, rejected, existing):
             "reason": "; ".join(reasons)}
 
 
-def load_companies(cur, offset, limit):
+def load_companies(cur, offset, limit, min_evidence=1):
     cur.execute(
         "SELECT c.company_id, c.company_name, c.normalized_name, "
         "SUM(e.non_senior_filing_count) AS evidence "
         "FROM company_role_evidence e JOIN companies c USING (company_id) "
-        "WHERE e.track <> 'SOFTWARE_ENGINEERING' "
+        "WHERE e.track <> 'SOFTWARE_ENGINEERING' AND NOT c.likely_staffing "
         "AND e.company_id NOT IN (SELECT company_id FROM ats_sources) "
-        "GROUP BY c.company_id, c.company_name, c.normalized_name HAVING evidence > 0 "
-        "ORDER BY evidence DESC, c.company_id")
+        "GROUP BY c.company_id, c.company_name, c.normalized_name HAVING evidence >= %s "
+        "ORDER BY evidence DESC, c.company_id", (max(min_evidence, 1),))
     rows = [r for r in cur.fetchall() if not any(s in r[2].lower() for s in STAFFING)]
     return [{"rank": offset + i + 1, "company_id": cid, "company_name": name, "evidence": int(ev)}
             for i, (cid, name, _, ev) in enumerate(rows[offset:offset + limit])]
@@ -212,6 +215,8 @@ def main():
     ap.add_argument("--offset", type=int, default=0)
     ap.add_argument("--sample", type=int, help="probe a random sample of this size from the ranks")
     ap.add_argument("--seed", type=int, default=551)
+    ap.add_argument("--min-evidence", type=int, default=1,
+                    help="only candidates with at least this many non-senior non-SWE filings")
     ap.add_argument("--skip-ids", help="file with company_ids already probed, one per line")
     ap.add_argument("--merge", nargs="*", default=[], help="earlier hit CSVs for the skipped ids")
     ap.add_argument("--out", default=str(ROOT / "experiments" / "slug_candidates.csv"))
@@ -224,14 +229,11 @@ def main():
     conn = get_conn()
     try:
         cur = conn.cursor()
-        companies = load_companies(cur, args.offset, args.limit)
+        companies = load_companies(cur, args.offset, args.limit, args.min_evidence)
         cur.execute("SELECT ats_type, slug FROM ats_sources")
         existing = set(cur.fetchall())
     finally:
         conn.close()
-    if args.sample:
-        companies = sorted(random.Random(args.seed).sample(companies, min(args.sample, len(companies))),
-                           key=lambda c: c["rank"])
     with open(REVIEW_CSV, encoding="utf-8") as f:
         rejected = {(r["ats"], r["slug"]) for r in csv.DictReader(f) if r["decision"] == "reject"}
     hits = []
@@ -249,6 +251,10 @@ def main():
         n_before = len(companies)
         companies = [c for c in companies if c["company_id"] not in skip]
         print(f"{n_before - len(companies)} companies already probed: {len(hits)} earlier hits merged")
+    # Sample after the skip, so a sample never contains already-probed companies
+    if args.sample:
+        companies = sorted(random.Random(args.seed).sample(companies, min(args.sample, len(companies))),
+                           key=lambda c: c["rank"])
 
     print(f"{len(companies)} companies (ranks {args.offset + 1}-{args.offset + args.limit}"
           + (f", random sample, seed {args.seed}" if args.sample else "") + f"), {WORKERS} workers",

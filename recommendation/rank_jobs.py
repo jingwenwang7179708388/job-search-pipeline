@@ -5,8 +5,8 @@ recommendation/rank_jobs.py - rule-based Top 20 for one user, written to recomme
 Hard filters (a job failing any of them is never recommended):
   status = active; missing_run_count = 0 (the job appeared in its source's latest successful
   fetch: a job missing from it is probably taken down even before it is closed);
-  role_family in the user's target_tracks; global_eligible and
-  visa_evidence != Blocked; seniority != senior; seniority != intern unless --include-interns;
+  the company is not likely_staffing (lca/flag_staffing.py); role_family in the user's
+  target_tracks; global_eligible and visa_evidence != Blocked; seniority != senior; seniority != intern unless --include-interns;
   not a foreign-only location; date = COALESCE(posted_at, first_seen_at) inside the window:
   48 hours first, 30 days when fewer than TOP_N jobs can be picked from the 48-hour pool.
 
@@ -20,7 +20,8 @@ Score (0-100):
                   elsewhere in the US 0
   freshness   10  age of the date <= 48 hours 10, then linear down to 0 at 30 days
   visa        15  Likely 15, Unclear 7, Unlikely 0
-At most MAX_PER_COMPANY jobs per company. Ties: higher visa score, newer date, lower job_id.
+At most MAX_PER_COMPANY jobs per company; the same title at the same company (one posting per
+location) is kept once, the best-scored one. Ties: higher visa score, newer date, lower job_id.
 posted_at is a date and is taken as midnight. needs_sponsorship is not used beyond the visa
 filters and score (the test user needs sponsorship).
 
@@ -64,6 +65,23 @@ FOREIGN = re.compile(
     r"hyderabad|pune|mumbai|delhi|china|beijing|shanghai|hong kong|taiwan|taipei|hsinchu|"
     r"singapore|japan|tokyo|korea|seoul|australia|sydney|melbourne|new zealand|brazil|"
     r"sao paulo|mexico|argentina|colombia|chile|philippines|vietnam|indonesia|uae|dubai)\b", re.I)
+# SmartRecruiters ends a location with a lowercase ISO country code ("Jundiaí, SP, br",
+# "Sofia, bg"; US jobs end in "us"). A 2-part "city, xx" whose code is a US state
+# ("jurupa valley, ca" on Greenhouse) is a US location, so it only counts with 3 parts.
+LOWER_CC = re.compile(r"^(?:[^,]+,)+\s*([a-z]{2})\s*$")
+US_STATES = {"al", "ak", "az", "ar", "ca", "co", "ct", "de", "dc", "fl", "ga", "hi", "id", "il",
+             "in", "ia", "ks", "ky", "la", "me", "md", "ma", "mi", "mn", "ms", "mo", "mt", "ne",
+             "nv", "nh", "nj", "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri", "sc", "sd",
+             "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy"}
+
+
+def foreign_country_code(seg):
+    m = LOWER_CC.match(seg)
+    if not m or m.group(1) == "us":
+        return False
+    return seg.count(",") >= 2 or m.group(1) not in US_STATES
+
+
 CA_PLACES = re.compile(r"california|san francisco|bay area|mountain ?view|palo alto|foster city|"
                        r"menlo park|sunnyvale|san jose|santa clara|redwood city|oakland|"
                        r"los angeles|san diego|irvine|\bUS-SF\b", re.I)
@@ -88,7 +106,7 @@ def location_class(loc, preferred):
              for p in preferred]
     us_other = False
     for s in segs:
-        if FOREIGN.search(s) or FOREIGN_CODES.search(s):
+        if FOREIGN.search(s) or FOREIGN_CODES.search(s) or foreign_country_code(s):
             continue
         if any(t(s) for t in tests):
             return "match"
@@ -137,8 +155,8 @@ def load_user(cur, user_id):
 
 def load_jobs(cur):
     cur.execute(
-        "SELECT j.job_id, j.company_id, c.company_name, j.title, j.location_text, j.status, "
-        "j.posted_at, j.first_seen_at, j.missing_run_count, f.role_family, f.global_eligible, "
+        "SELECT j.job_id, j.company_id, c.company_name, c.likely_staffing, j.title, "
+        "j.location_text, j.status, j.posted_at, j.first_seen_at, j.missing_run_count, f.role_family, f.global_eligible, "
         "f.visa_evidence, f.seniority, f.min_years_experience, f.skills "
         "FROM jobs j JOIN job_features f USING (job_id) JOIN companies c ON c.company_id = j.company_id")
     cols = [d[0] for d in cur.description]
@@ -146,16 +164,23 @@ def load_jobs(cur):
 
 
 def pick(scored):
-    """Greedy by score with the per-company cap -> (picked in order, skipped by the cap)."""
+    """Greedy by score with the per-company cap -> (picked in order, skipped by the cap,
+    number of repeats dropped). A repeat is the same company and the same title (one posting
+    per location, e.g. Luma AI): only the best-scored one is kept and it uses one slot."""
     order = sorted(scored, key=lambda x: (-x["total"], -x["visa"], -x["date"].timestamp(), x["job_id"]))
-    picked, skipped, per_co = [], [], {}
+    picked, skipped, per_co, seen, n_repeat = [], [], {}, set(), 0
     for x in order:
+        key = (x["company_id"], x["title"].strip())
+        if key in seen:
+            n_repeat += 1
+            continue
+        seen.add(key)
         if per_co.get(x["company_id"], 0) >= MAX_PER_COMPANY:
             skipped.append(x)
             continue
         per_co[x["company_id"]] = per_co.get(x["company_id"], 0) + 1
         picked.append(x)
-    return picked, skipped
+    return picked, skipped, n_repeat
 
 
 def main():
@@ -181,6 +206,7 @@ def main():
         filters = [
             ("status = active", lambda j: j["status"] == "active"),
             ("missing_run_count = 0 (in the latest fetch)", lambda j: j["missing_run_count"] == 0),
+            ("company not likely staffing", lambda j: not j["likely_staffing"]),
             ("Track in the user's Tracks", lambda j: j["role_family"] in user["tracks"]),
             ("global_eligible and not Blocked",
              lambda j: j["global_eligible"] and j["visa_evidence"] != "Blocked"),
@@ -194,7 +220,7 @@ def main():
             pool = [j for j in pool if f(j)]
             funnel.append((name, len(pool)))
 
-        window = picked = skipped = None
+        window = picked = skipped = n_repeat = None
         for wname, span in WINDOWS:
             in_window = [j for j in pool if now - j["date"] <= span]
             funnel.append((f"date within {wname}", len(in_window)))
@@ -209,7 +235,7 @@ def main():
                                    + x["visa"], 2)
                 scored.append(x)
             window = wname
-            picked, skipped = pick(scored)
+            picked, skipped, n_repeat = pick(scored)
             if len(picked) >= TOP_N:
                 break
 
@@ -219,7 +245,7 @@ def main():
         for name, n in funnel:
             print(f"  {name:<46}{n:>6,}")
         print(f"Window used: {window}  ({len(picked)} pickable after the company cap, "
-              f"{len(skipped)} skipped by the cap)")
+              f"{len(skipped)} skipped by the cap, {n_repeat} same-title repeats dropped)")
 
         top = picked[:TOP_N]
         print(f"\nTop {len(top)}:")

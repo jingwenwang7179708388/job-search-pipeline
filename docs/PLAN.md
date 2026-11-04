@@ -45,6 +45,17 @@ The old CSV pipeline (`build_companies → resolve_slugs → job_feed → jobs_*
   match. Not fixed for now (a working version would change the LCA evidence and the frozen
   Track experiments). IT staffing names found while resolving slugs are excluded only in
   `mapping/resolve_slugs_db.py` (STAFFING).
+- Known limitation, **must be fixed before scheduled fetching**: paginated fetchers stop at
+  `MAX_POSTINGS` = 2,000 per source (SmartRecruiters, Workday). A truncated list still counts
+  as a successful fetch, so every active posting beyond the cap gets `missing_run_count + 1`
+  and is closed after 3 runs. Hit on 2026-11-03 by Turner & Townsend and Integrated
+  Resources (SmartRecruiters, exactly 2,000 returned); Micron (2,887) and probably NVIDIA,
+  Michaels, Leidos on Workday.
+- Known limitation: the 46 active Workday sources were not fetched in the 2026-11-03 run
+  (~24,700 postings at 20 per page with a 1.5 s pause, plus a detail request per data/ML
+  title: an estimated 2-3 hours). To be run on their own in the background.
+- Known limitation: `ashby/confluent` returned 0 postings on 2026-11-03 (an empty response
+  changes no missing counts); Confluent has probably moved to another ATS. Not checked yet.
 - No LLM calls in these 3 days: keywords and regex only.
 - Code, comments, SQL comments and logs in English.
 
@@ -209,3 +220,28 @@ Priority: DB correctness > data in the DB > Top 20 > feedback saved > 551 experi
   Track: SWE 38,417, DA 14,445, BA 11,105, SYS 10,758, DE 10,016, DS 9,213, FIN 7,841,
   MLE 3,868, MLR 1,832, QUANT 1,673. Also: "member of technical staff" no longer counts as
   senior; `fetch_jobs.py --per-ats` ranks by DS + ML_ENGINEERING + ML_RESEARCH (`--tracks`).
+- **2026-10-23 - ATS slugs for candidate ranks 1-5,000** (`mapping/resolve_slugs_db.py`,
+  `experiments/slug_candidates_top5000.csv`): 563 hits, 238 high / 325 low. Loaded into
+  `ats_sources` (new columns `board_name`, `confidence`, `discovered_by`, `discovered_at`):
+  238 high (active) + 223 low (inactive); 102 skipped (40 already there, 26 rejected before,
+  36 repeated slugs). `ats_sources` 712 rows, 481 active.
+- **2026-11-03 - Fetch of every active non-Workday source.** Domino's (SmartRecruiters, store
+  jobs) set inactive first. 434 sources in 23 min, 0 failed, 7 empty responses: 33,470 new,
+  117 updated, 30 closed (Lever), 428 missing + 1. `jobs` 2,683 -> 36,153 (Greenhouse 20,096,
+  SmartRecruiters 11,436, Ashby 3,089, Lever 1,453, Recruitee 79); companies with jobs
+  15 -> 427. SmartRecruiters: of 2,229 postings whose title matches `DESC_TITLES`, 1 has no
+  JD (no sign of rate limiting; other titles get no detail request by design).
+  `processing/process_jobs.py`: 33,587 processed, 0 failed.
+- **2026-11-03 - Ranking fixes and staffing flag.** `rank_jobs.py`: a location ending in a
+  lowercase country code other than `us` is foreign (SmartRecruiters "Jundiaí, SP, br"; a
+  2-part "city, xx" only when xx is not a US state); the same title at the same company is
+  kept once; companies with `likely_staffing` are filtered out. New
+  `companies.likely_staffing` (ALTER + `sql/schema.sql`) from `lca/flag_staffing.py`: > 50% of
+  certified filings H-1B dependent AND > 50% at a secondary entity -> 2,899 companies (2,265
+  of the 36,173 with non-SWE evidence); Amazon, Google, Microsoft, Meta, Apple, Uber, Airbnb,
+  Stripe and IBM are not flagged (either field alone flags Meta/NVIDIA or IBM). 36 active
+  sources of flagged companies set inactive (8 from companies.csv, 28 high from the scan):
+  712 rows, 444 active. `resolve_slugs_db.py` skips flagged companies; `--min-evidence`.
+  New Top 20 for user 1 (30-day window, 81 candidates): 17 of the 20 from companies added
+  since the first 15, incl. small sponsors (Plaid 96 non-senior filings, Luma AI 36, Public
+  Storage 19, Scopely 15).

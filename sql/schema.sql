@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS companies (
     company_id      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_name    VARCHAR(255) NOT NULL,              -- raw LCA employer name
     normalized_name VARCHAR(255) NOT NULL,              -- cleaned name, used for de-duplication (every company with H-1B filings in a target track)
+    -- IT staffing / outsourcing: > 50% of its certified LCA filings are H-1B dependent AND > 50%
+    -- place the worker at a secondary entity (lca/flag_staffing.py)
+    likely_staffing BOOLEAN NOT NULL DEFAULT FALSE,
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_companies_normalized (normalized_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
