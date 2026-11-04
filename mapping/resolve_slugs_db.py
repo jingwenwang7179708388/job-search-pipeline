@@ -37,7 +37,7 @@ Usage (from the project root):
   python3 mapping/resolve_slugs_db.py --load-csv experiments/slug_candidates_top5000.csv
       load a hits CSV into ats_sources: high -> is_active TRUE, low -> FALSE, discovered_by
       'resolve_slugs_db'; skipped: slugs already in ats_sources, slugs rejected before, and a
-      repeated (ats, slug) within the CSV (the better-ranked company keeps it)
+      repeated (ats, slug) within the CSV (a high hit beats a low one, then the better rank)
 """
 
 import argparse
@@ -179,7 +179,7 @@ def load_companies(cur, offset, limit, min_evidence=1):
 def load_csv(path):
     """Insert the hits of a CSV written by this script into ats_sources (see the docstring)."""
     with open(path, encoding="utf-8") as f:
-        rows = sorted(csv.DictReader(f), key=lambda r: int(r["rank"]))
+        rows = sorted(csv.DictReader(f), key=lambda r: (r["confidence"] != "high", int(r["rank"])))
     with open(REVIEW_CSV, encoding="utf-8") as f:
         rejected = {(r["ats"], r["slug"]) for r in csv.DictReader(f) if r["decision"] == "reject"}
     conn = get_conn()

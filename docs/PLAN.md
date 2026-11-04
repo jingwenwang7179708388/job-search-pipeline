@@ -245,3 +245,16 @@ Priority: DB correctness > data in the DB > Top 20 > feedback saved > 551 experi
   New Top 20 for user 1 (30-day window, 81 candidates): 17 of the 20 from companies added
   since the first 15, incl. small sponsors (Plaid 96 non-senior filings, Luma AI 36, Public
   Storage 19, Scopely 15).
+- **2026-11-03 - Slug scan of the candidate tail.** Candidates past rank 5,000 with >= 2
+  non-senior non-SWE filings and not `likely_staffing`: 13,497 companies (the 5,000 probed on
+  2026-10-23 pinned in `experiments/slug_probed_top5000_ids.txt`). A random 500
+  (`experiments/slug_probed_tail_sample500_ids.txt`, seed 551): 56 hits (11.2%), 19 high.
+  The other 12,997 in 79 min (0.36 s per company); together 867 hits (6.4%), 304 high / 563
+  low -> `experiments/slug_candidates_tail.csv` (Greenhouse 150/250, Ashby 60/186,
+  SmartRecruiters 49/28, Lever 44/65, Recruitee 1/33, Workable 0/1). A canary of known
+  slugs: Recruitee returned 429 on 31 of 145 checks (its tail hits may be undercounted),
+  the other platforms none. `--load-csv` now lets a high hit beat a low one for a repeated
+  slug (MasterControl and Campfire would have lost theirs to a better-ranked low company).
+  Loaded 304 high (active) + 342 low (inactive); skipped 146 already in ats_sources, 18
+  rejected before, 57 repeated. `ats_sources` 712 -> 1,358 rows, 444 -> 748 active. The new
+  sources are not fetched yet.
