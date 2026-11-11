@@ -258,3 +258,13 @@ Priority: DB correctness > data in the DB > Top 20 > feedback saved > 551 experi
   Loaded 304 high (active) + 342 low (inactive); skipped 146 already in ats_sources, 18
   rejected before, 57 repeated. `ats_sources` 712 -> 1,358 rows, 444 -> 748 active. The new
   sources are not fetched yet.
+- **2026-11-10 - Fetch of the tail sources and new Top 20.** The 304 active sources loaded
+  from the tail scan (no jobs yet, Workday excluded) in 6 min: 304 succeeded, 0 failed, 3
+  returned 0 postings (lever/minted, recruitee/atheneum, greenhouse/leagueapps); 11,904 new
+  jobs. `jobs` 36,153 -> 48,057, companies with jobs 427 -> 728. `process_jobs.py`: 11,904
+  processed, 0 failed (1,921 not OTHER). New Top 20 for user 1 (30-day window, 83
+  candidates): 2 from the first 15 companies (Lyft, Zoox), 11 from the first scan and
+  companies.csv, 7 from the tail scan (Lila Sciences x2, Descript, Avalere Health, Monster
+  Energy, Reality Defender, Path Robotics). No foreign location, staffing company or repeated
+  title in it. Descript's "AI Growth Specialist (BDR)", a sales role, gets ML_ENGINEERING from
+  the frozen Track rules (vague title with "ai").
