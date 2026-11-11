@@ -268,3 +268,19 @@ Priority: DB correctness > data in the DB > Top 20 > feedback saved > 551 experi
   Energy, Reality Defender, Path Robotics). No foreign location, staffing company or repeated
   title in it. Descript's "AI Growth Specialist (BDR)", a sales role, gets ML_ENGINEERING from
   the frozen Track rules (vague title with "ai").
+- **2026-11-10 - Track rules v7 and architect seniority.** `experiments/track_rules_v7.py`
+  extends only the no-SOC exclusion list of v6 (bdr, sdr, business development
+  representative, sales development, growth specialist, specialist, architect), after
+  Descript "AI Growth Specialist (BDR)" and Gusto "FP&A AI Architect" came out as
+  ML_ENGINEERING. LCA: 0 differences from v6 over 660,771 (title, SOC) pairs; hand labels
+  still 164/194. Jobs: 108 active postings ML_ENGINEERING -> OTHER (75 architect, 33
+  specialist), incl. 3 known real technical roles (AI/Machine Learning Specialist, AI Data
+  Specialist - Tokyo, Intelligent Automation & AI Specialist; senior or outside the US),
+  accepted over sending ~30 sales / security specialists back to ML_ENGINEERING (known
+  limitation in docs/TRACKS.md). Frozen into `common/tracks.py`; `check_common_tracks.py` now
+  checks against v7: 0 mismatches. `process_jobs.py`: "architect" anywhere in the title ->
+  senior (Monster Energy "AI Architect" was entry from "1 year"). `process_jobs.py --all`:
+  48,057 processed, 0 failed; 108 Track changes, 14 architect titles unknown -> senior (Data
+  Architect and similar). New Top 20 for user 1 (30-day window, 73 candidates): Descript and
+  Monster Energy dropped out, Thumbtack and Solace (tail) came in; 2 from the first 15
+  companies, 12 from the first scan and companies.csv, 6 from the tail scan.

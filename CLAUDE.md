@@ -78,11 +78,12 @@ then `python3 legacy/job_feed.py` (needs `GROQ_API_KEY`).
 
 - No Spark - pandas + Parquet. No LLM calls in the 3-day build - keywords and regex only.
 - Tracks are defined in `docs/TRACKS.md` (10 Tracks + `OTHER`); that file is the source of
-  truth. The rules are the frozen v5 (`experiments/track_rules_v5.py`), copied into
-  `common/tracks.py` (`classify_title(title, soc_code=None)`, no pandas);
-  `experiments/check_common_tracks.py` checks the copy is identical. Blind-label precision on
-  the same sample: v4 71% -> v5 85%. Change rules by making a new experiment version, not by
-  editing v4/v5 in place.
+  truth. The rules are the frozen v7 (`experiments/track_rules_v7.py`: v5 plus a fallback for
+  vague titles with no SOC, v6, with a longer exclusion list), copied into `common/tracks.py`
+  (`classify_title(title, soc_code=None)`, no pandas); `experiments/check_common_tracks.py`
+  checks the copy is identical. Blind-label precision on the same sample: v4 71% -> v5 85%
+  (v6/v7 change only titles with no SOC, so the same). Change rules by making a new experiment
+  version, not by editing earlier versions in place.
 - `lca/process_lca.py` classifies every cleaned filing with `common.tracks.classify_title`
   (title + SOC) and writes all 10 Tracks (incl. SOFTWARE_ENGINEERING) to
   `company_role_evidence`; OTHER is never written. Seniority (`TITLE_SKIP`, with "member of

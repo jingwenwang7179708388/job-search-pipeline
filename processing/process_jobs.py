@@ -10,7 +10,8 @@ Per job (title + JD text), keywords and regex only:
                  (common.tracks.normalize_title levels; "member of technical staff" is not a
                  level): intern / internship / co-op / student worker / contract student
                  -> intern; senior, sr, lead, staff,
-                 principal, manager, director, head, vp, iii, iv, v -> senior; ii -> mid;
+                 principal, manager, director, head, vp, iii, iv, v, or "architect" anywhere
+                 in the title (an architect role is not new-grad) -> senior; ii -> mid;
                  associate, junior, jr, i, new grad, entry level, early career, university
                  graduate -> entry. No level word: by min_years_experience (0-1 entry, 2-4 mid,
                  5+ senior), else unknown.
@@ -81,6 +82,7 @@ ENTRY_TITLE_RE = re.compile(r"\b(?:new grad\w*|recent grad\w*|entry level|early 
 SENIOR_LEVELS = {"senior", "sr", "lead", "staff", "principal", "manager", "managers", "director",
                  "head", "vp", "iii", "iv", "v"}
 ENTRY_LEVELS = {"associate", "junior", "jr", "i"}
+ARCHITECT_RE = re.compile(r"\barchitects?\b")
 
 # ------------------------------------------------ years of experience
 YEARS_RE = re.compile(
@@ -151,7 +153,7 @@ def seniority(title, years):
     lv = set(levels.split())
     if INTERN_RE.search(pre):
         return "intern"
-    if lv & SENIOR_LEVELS:
+    if lv & SENIOR_LEVELS or ARCHITECT_RE.search(pre):
         return "senior"
     if "ii" in lv:
         return "mid"

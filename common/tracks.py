@@ -2,9 +2,9 @@
 common/tracks.py - Track classification for job titles (LCA filings and ATS postings)
 
 The rules implement docs/TRACKS.md. They are copied unchanged from the frozen
-experiments/track_rules_v6.py (= v5, commit ff07fa0, plus a fallback for vague titles with no
-SOC); v6 and this module agree on every distinct (title, SOC) pair in the LCA data and on every
-job title with no SOC. Change the rules in docs/TRACKS.md first, then here.
+experiments/track_rules_v7.py (= v5, commit ff07fa0, plus a fallback for vague titles with no
+SOC from v6, whose exclusion list v7 extends); v7 and this module agree on every distinct
+(title, SOC) pair in the LCA data and on every job title with no SOC. Change the rules in docs/TRACKS.md first, then here.
 
 Public API:
   classify_title(title, soc_code=None) -> (track, rule_path)
@@ -13,9 +13,9 @@ Public API:
 
 soc_code may be None: ATS postings have no SOC. Without a SOC there is no SOC veto and every
 SOC tie-break falls through to its default (usually OTHER), so vague titles such as a bare
-"Engineer" or "Business Analyst" come out as OTHER. The one exception (v6) is a title with no
+"Engineer" or "Business Analyst" come out as OTHER. The one exception (v6/v7) is a title with no
 core word that passes VAGUE_GATE: without a SOC it goes to _no_soc_fallback (docs/TRACKS.md,
-"No-SOC fallback (v6)").
+"No-SOC fallback (v6, v7)").
 """
 
 import re
@@ -92,12 +92,15 @@ ANALYTICS_W = _w(r"analytics")
 CONSULTANT_W = _w(r"consultants?")
 NOT_ANALYTICS_ONLY = _w(r"data science|machine learning|ai|consultants?")   # consultants are not DA
 VAGUE_GATE = _w(r"data science|analytics|statistic\w*|machine learning|ai|research\w*")
-# v6: fallback for vague titles with no SOC
+# v6 (v7: longer exclusion): fallback for vague titles with no SOC
 NO_SOC_EXCLUDE = _w(r"account executives?|sales|marketing|recruiters?|recruiting|legal|"
                     r"customer (?:success|support|service|experience|care)|"
                     r"partnerships?|product managers?|program managers?|project managers?|"
                     r"solutions? architects?|business development|commercialization|"
-                    r"account managers?|clients?|enablement|accounting|business risk")
+                    r"account managers?|clients?|enablement|accounting|business risk|"
+                    # v7
+                    r"bdrs?|sdrs?|business development representatives?|sales development|"
+                    r"growth specialists?|specialists?|architects?")
 NO_SOC_ML = _w(r"machine learning|ml|ai|artificial intelligence|deep learning|llms?|computer vision|nlp|"
                r"foundation models?|world models?|vlm|post training|perception")   # pre: "-" -> " "
 NO_SOC_RESEARCH = _w(r"research|researchers?")
@@ -150,7 +153,7 @@ def _vague_by_soc(soc):
 
 
 def _no_soc_fallback(pre):
-    """v6: vague title with no core word and no SOC (ATS postings) -> (track, rule path)."""
+    """v6/v7: vague title with no core word and no SOC (ATS postings) -> (track, rule path)."""
     if NO_SOC_EXCLUDE.search(pre):
         return "OTHER", "no core word: vague, no SOC: non-engineering role"
     if NO_SOC_ML.search(pre):
